@@ -2,95 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 39 33% 96%;
+    --foreground: 25 35% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 38 30% 97%;
+    --card-foreground: 25 35% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 38 30% 97%;
+    --popover-foreground: 25 35% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 25 50% 28%;
+    --primary-foreground: 40 40% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 35 25% 90%;
+    --secondary-foreground: 25 35% 18%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 33 18% 88%;
+    --muted-foreground: 25 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 38 70% 50%;
+    --accent-foreground: 25 40% 10%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 32 22% 84%;
+    --input: 32 22% 84%;
+    --ring: 25 50% 28%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 35 28% 94%;
+    --sidebar-foreground: 25 30% 20%;
+    --sidebar-primary: 25 50% 28%;
+    --sidebar-primary-foreground: 40 40% 95%;
+    --sidebar-accent: 35 22% 88%;
+    --sidebar-accent-foreground: 25 30% 15%;
+    --sidebar-border: 32 18% 82%;
+    --sidebar-ring: 38 70% 50%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Custom tokens */
+    --hero-gradient: linear-gradient(135deg, hsl(25 50% 28%), hsl(30 40% 22%));
+    --hero-gradient-soft: linear-gradient(180deg, hsl(25 50% 28% / 0.9), hsl(30 40% 22% / 0.95));
+    --card-shadow: 0 4px 20px -4px hsl(25 30% 20% / 0.08);
+    --card-shadow-hover: 0 12px 32px -8px hsl(25 30% 20% / 0.16);
+    --parchment: 39 40% 94%;
+    --warm-overlay: 30 30% 50% / 0.05;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 25 30% 8%;
+    --foreground: 38 25% 90%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 25 28% 11%;
+    --card-foreground: 38 25% 90%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 25 28% 11%;
+    --popover-foreground: 38 25% 90%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 38 60% 55%;
+    --primary-foreground: 25 40% 8%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 25 20% 18%;
+    --secondary-foreground: 38 25% 85%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 25 18% 16%;
+    --muted-foreground: 30 15% 55%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 38 65% 50%;
+    --accent-foreground: 25 40% 8%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 25 18% 20%;
+    --input: 25 18% 20%;
+    --ring: 38 60% 55%;
+
+    --sidebar-background: 25 28% 10%;
+    --sidebar-foreground: 38 20% 85%;
+    --sidebar-primary: 38 60% 55%;
+    --sidebar-primary-foreground: 25 40% 8%;
+    --sidebar-accent: 25 18% 15%;
+    --sidebar-accent-foreground: 38 20% 85%;
+    --sidebar-border: 25 15% 18%;
+    --sidebar-ring: 38 65% 50%;
+
+    --hero-gradient: linear-gradient(135deg, hsl(25 30% 12%), hsl(30 25% 8%));
+    --hero-gradient-soft: linear-gradient(180deg, hsl(25 30% 12% / 0.95), hsl(30 25% 8% / 0.98));
+    --card-shadow: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+    --card-shadow-hover: 0 12px 32px -8px hsl(0 0% 0% / 0.5);
+    --parchment: 25 20% 12%;
+    --warm-overlay: 30 20% 50% / 0.03;
   }
 }
 
@@ -100,6 +105,66 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .book-card {
+    @apply bg-card rounded-lg overflow-hidden transition-all duration-300 ease-out;
+    box-shadow: var(--card-shadow);
+  }
+
+  .book-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--card-shadow-hover);
+  }
+
+  .genre-tag {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-sans font-medium
+           bg-secondary text-secondary-foreground border border-border
+           transition-colors duration-200 cursor-pointer;
+  }
+
+  .genre-tag:hover {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .genre-tag.active {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .parchment-bg {
+    background-color: hsl(var(--parchment));
+  }
+
+  .hero-overlay {
+    background: var(--hero-gradient-soft);
+  }
+
+  .warm-section {
+    background: hsl(var(--warm-overlay));
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .font-body {
+    font-family: 'Source Serif 4', 'Georgia', serif;
+  }
+
+  .font-sans {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }
