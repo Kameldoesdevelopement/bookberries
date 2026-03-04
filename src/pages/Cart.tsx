@@ -42,7 +42,7 @@ const Cart = () => {
                 exit={{ opacity: 0 }}
                 className="flex gap-4 rounded-lg border border-border bg-card p-4"
               >
-                <div className={`h-24 w-16 flex-shrink-0 rounded bg-gradient-to-b ${item.book.coverColor}`} />
+                <div className={`h-24 w-16 flex-shrink-0 rounded bg-gradient-to-b ${item.book.cover_color}`} />
                 <div className="flex flex-1 flex-col justify-between">
                   <div>
                     <h3 className="font-display text-sm font-semibold text-foreground">{item.book.title}</h3>

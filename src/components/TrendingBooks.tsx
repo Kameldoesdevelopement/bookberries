@@ -1,9 +1,9 @@
 import BookCard from "@/components/BookCard";
-import { books } from "@/data/books";
+import { useTrendingBooks } from "@/hooks/useBooks";
 import { motion } from "framer-motion";
 
 const TrendingBooks = () => {
-  const trending = books.filter((b) => b.isTrending);
+  const { data: trending = [], isLoading } = useTrendingBooks();
 
   return (
     <section className="py-20 parchment-bg">
@@ -23,11 +23,19 @@ const TrendingBooks = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-5">
-          {trending.map((book) => (
-            <BookCard key={book.id} book={book} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="aspect-[2/3] animate-pulse rounded-lg bg-muted" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-5">
+            {trending.map((book) => (
+              <BookCard key={book.id} book={book} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
