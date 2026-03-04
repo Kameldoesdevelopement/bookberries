@@ -1,79 +1,54 @@
-import { useState } from "react";
-import { books as initialBooks, type Book } from "@/data/books";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { GENRES } from "@/data/books";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff } from "lucide-react";
+import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import type { Tables } from "@/integrations/supabase/types";
 
 const ADMIN_PASSWORD = "kutub2026";
 
-interface Order {
-  id: string;
-  customerName: string;
-  phone: string;
-  wilaya: string;
-  deliveryType: string;
-  items: { title: string; quantity: number }[];
-  totalPrice: number;
-  status: "pending" | "completed";
-}
-
-interface BookRequest {
-  id: string;
-  name: string;
-  email: string;
-  requestedTitle: string;
-  author: string;
-  message: string;
-  resolved: boolean;
-}
+type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
+type BookRequest = Tables<"book_requests">;
 
 const Admin = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [tab, setTab] = useState<"orders" | "requests" | "add-book">("orders");
+  const queryClient = useQueryClient();
 
-  // Demo data
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: "1",
-      customerName: "Ahmed B.",
-      phone: "0551234567",
-      wilaya: "Alger",
-      deliveryType: "home",
-      items: [{ title: "The Stranger", quantity: 1 }, { title: "Atomic Habits", quantity: 2 }],
-      totalPrice: 4200,
-      status: "pending",
-    },
-    {
-      id: "2",
-      customerName: "Fatima Z.",
-      phone: "0667890123",
-      wilaya: "Oran",
-      deliveryType: "pickup",
-      items: [{ title: "Nedjma", quantity: 1 }],
-      totalPrice: 1100,
-      status: "pending",
-    },
-  ]);
-
-  const [requests, setRequests] = useState<BookRequest[]>([
-    {
-      id: "1",
-      name: "Karim M.",
-      email: "karim@example.com",
-      requestedTitle: "Les Misérables",
-      author: "Victor Hugo",
-      message: "French edition preferred.",
-      resolved: false,
-    },
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [requests, setRequests] = useState<BookRequest[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [loadingRequests, setLoadingRequests] = useState(false);
 
   const [newBook, setNewBook] = useState({
     title: "", author: "", price: "", description: "", genre: [] as string[], isTrending: false,
   });
+
+  const fetchOrders = async () => {
+    setLoadingOrders(true);
+    const { data } = await supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
+    setOrders((data as Order[]) || []);
+    setLoadingOrders(false);
+  };
+
+  const fetchRequests = async () => {
+    setLoadingRequests(true);
+    const { data } = await supabase.from("book_requests").select("*").order("created_at", { ascending: false });
+    setRequests(data || []);
+    setLoadingRequests(false);
+  };
+
+  useEffect(() => {
+    if (authenticated) {
+      fetchOrders();
+      fetchRequests();
+    }
+  }, [authenticated]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,27 +59,58 @@ const Admin = () => {
     }
   };
 
+  const markOrderCompleted = async (id: string) => {
+    await supabase.from("orders").update({ status: "completed" }).eq("id", id);
+    setOrders(orders.map((o) => o.id === id ? { ...o, status: "completed" } : o));
+    toast.success("Order marked as completed");
+  };
+
+  const deleteOrder = async (id: string) => {
+    await supabase.from("orders").delete().eq("id", id);
+    setOrders(orders.filter((o) => o.id !== id));
+    toast.success("Order deleted");
+  };
+
+  const resolveRequest = async (id: string) => {
+    await supabase.from("book_requests").update({ resolved: true }).eq("id", id);
+    setRequests(requests.map((r) => r.id === id ? { ...r, resolved: true } : r));
+    toast.success("Request resolved");
+  };
+
+  const addBook = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBook.title || !newBook.author || !newBook.price) {
+      toast.error("Fill in required fields.");
+      return;
+    }
+    const { error } = await supabase.from("books").insert({
+      title: newBook.title,
+      author: newBook.author,
+      price: parseInt(newBook.price),
+      description: newBook.description,
+      genre: newBook.genre,
+      is_trending: newBook.isTrending,
+    });
+    if (error) {
+      toast.error("Failed to add book.");
+      return;
+    }
+    toast.success(`"${newBook.title}" added to the catalog!`);
+    setNewBook({ title: "", author: "", price: "", description: "", genre: [], isTrending: false });
+    queryClient.invalidateQueries({ queryKey: ["books"] });
+  };
+
   if (!authenticated) {
     return (
       <main className="min-h-screen parchment-bg flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-auto max-w-sm w-full px-4"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-sm w-full px-4">
           <div className="rounded-lg border border-border bg-card p-8 text-center">
             <Lock className="mx-auto h-10 w-10 text-primary mb-4" />
             <h1 className="font-display text-2xl font-bold text-foreground mb-2">Admin Access</h1>
             <p className="text-sm text-muted-foreground mb-6">Enter the admin password to continue.</p>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="w-full rounded-lg border border-input bg-background px-4 py-3 pr-10 font-sans text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <input type={showPassword ? "text" : "password"} className="w-full rounded-lg border border-input bg-background px-4 py-3 pr-10 font-sans text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -117,66 +123,56 @@ const Admin = () => {
     );
   }
 
-  const inputClass =
-    "w-full rounded-lg border border-input bg-background px-4 py-3 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
-
-  const tabClass = (t: string) =>
-    `px-4 py-2 font-sans text-sm font-medium rounded-lg transition-colors ${
-      tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"
-    }`;
+  const inputClass = "w-full rounded-lg border border-input bg-background px-4 py-3 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+  const tabClass = (t: string) => `px-4 py-2 font-sans text-sm font-medium rounded-lg transition-colors ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`;
 
   return (
     <main className="min-h-screen parchment-bg">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="font-display text-3xl font-bold text-foreground">Dashboard</h1>
-          <Button variant="ghost" onClick={() => setAuthenticated(false)} className="font-sans text-sm">
-            Logout
-          </Button>
+          <Button variant="ghost" onClick={() => setAuthenticated(false)} className="font-sans text-sm">Logout</Button>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-2 mb-8">
-          <button className={tabClass("orders")} onClick={() => setTab("orders")}>
-            <Package className="inline-block h-4 w-4 mr-1.5" />Orders
-          </button>
-          <button className={tabClass("requests")} onClick={() => setTab("requests")}>
-            <MessageSquare className="inline-block h-4 w-4 mr-1.5" />Requests
-          </button>
-          <button className={tabClass("add-book")} onClick={() => setTab("add-book")}>
-            <Plus className="inline-block h-4 w-4 mr-1.5" />Add Book
-          </button>
+          <button className={tabClass("orders")} onClick={() => setTab("orders")}><Package className="inline-block h-4 w-4 mr-1.5" />Orders</button>
+          <button className={tabClass("requests")} onClick={() => setTab("requests")}><MessageSquare className="inline-block h-4 w-4 mr-1.5" />Requests</button>
+          <button className={tabClass("add-book")} onClick={() => setTab("add-book")}><Plus className="inline-block h-4 w-4 mr-1.5" />Add Book</button>
         </div>
 
-        {/* Orders */}
         {tab === "orders" && (
           <div className="space-y-4">
-            {orders.length === 0 ? (
+            {loadingOrders ? (
+              <p className="text-muted-foreground py-8 text-center">Loading orders...</p>
+            ) : orders.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center">No orders yet.</p>
             ) : (
               orders.map((order) => (
                 <div key={order.id} className="rounded-lg border border-border bg-card p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
                     <div>
-                      <h3 className="font-sans text-sm font-semibold text-foreground">{order.customerName}</h3>
-                      <p className="font-sans text-xs text-muted-foreground">{order.phone} · {order.wilaya} · {order.deliveryType}</p>
+                      <h3 className="font-sans text-sm font-semibold text-foreground">{order.customer_name}</h3>
+                      <p className="font-sans text-xs text-muted-foreground">{order.phone} · {order.wilaya} · {order.delivery_type}</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <span className={`font-sans text-xs font-medium px-2 py-1 rounded-full ${order.status === "pending" ? "bg-accent/20 text-accent-foreground" : "bg-secondary text-secondary-foreground"}`}>
                         {order.status}
                       </span>
                       {order.status === "pending" && (
-                        <Button size="sm" variant="warm" onClick={() => setOrders(orders.map((o) => o.id === order.id ? { ...o, status: "completed" } : o))}>
+                        <Button size="sm" variant="warm" onClick={() => markOrderCompleted(order.id)}>
                           <Check className="h-3 w-3 mr-1" />Complete
                         </Button>
                       )}
+                      <Button size="sm" variant="ghost" onClick={() => deleteOrder(order.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
                   <div className="border-t border-border pt-3">
-                    {order.items.map((item, i) => (
+                    {order.order_items.map((item, i) => (
                       <span key={i} className="font-sans text-xs text-muted-foreground mr-3">{item.title} ×{item.quantity}</span>
                     ))}
-                    <span className="font-sans text-sm font-bold text-primary float-right">{order.totalPrice.toLocaleString()} DZD</span>
+                    <span className="font-sans text-sm font-bold text-primary float-right">{order.total_price.toLocaleString()} DZD</span>
                   </div>
                 </div>
               ))
@@ -184,26 +180,28 @@ const Admin = () => {
           </div>
         )}
 
-        {/* Requests */}
         {tab === "requests" && (
           <div className="space-y-4">
-            {requests.length === 0 ? (
+            {loadingRequests ? (
+              <p className="text-muted-foreground py-8 text-center">Loading requests...</p>
+            ) : requests.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center">No requests yet.</p>
             ) : (
               requests.map((req) => (
                 <div key={req.id} className="rounded-lg border border-border bg-card p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="font-sans text-sm font-semibold text-foreground">"{req.requestedTitle}" by {req.author || "Unknown"}</h3>
+                      <h3 className="font-sans text-sm font-semibold text-foreground">"{req.requested_title}" by {req.author || "Unknown"}</h3>
                       <p className="font-sans text-xs text-muted-foreground mt-1">{req.name} · {req.email}</p>
                       {req.message && <p className="font-sans text-xs text-muted-foreground mt-2 italic">"{req.message}"</p>}
                     </div>
-                    {!req.resolved && (
-                      <Button size="sm" variant="warm" onClick={() => setRequests(requests.map((r) => r.id === req.id ? { ...r, resolved: true } : r))}>
+                    {!req.resolved ? (
+                      <Button size="sm" variant="warm" onClick={() => resolveRequest(req.id)}>
                         <Check className="h-3 w-3 mr-1" />Resolve
                       </Button>
+                    ) : (
+                      <span className="font-sans text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full">Resolved</span>
                     )}
-                    {req.resolved && <span className="font-sans text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full">Resolved</span>}
                   </div>
                 </div>
               ))
@@ -211,21 +209,9 @@ const Admin = () => {
           </div>
         )}
 
-        {/* Add Book */}
         {tab === "add-book" && (
           <div className="mx-auto max-w-lg">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!newBook.title || !newBook.author || !newBook.price) {
-                  toast.error("Fill in required fields.");
-                  return;
-                }
-                toast.success(`"${newBook.title}" added to the catalog!`);
-                setNewBook({ title: "", author: "", price: "", description: "", genre: [], isTrending: false });
-              }}
-              className="space-y-5"
-            >
+            <form onSubmit={addBook} className="space-y-5">
               <div>
                 <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Title *</label>
                 <input className={inputClass} value={newBook.title} onChange={(e) => setNewBook({ ...newBook, title: e.target.value })} />
@@ -246,17 +232,10 @@ const Admin = () => {
                 <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Genres</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {GENRES.map((g) => (
-                    <button
-                      key={g}
-                      type="button"
-                      onClick={() => setNewBook({
-                        ...newBook,
-                        genre: newBook.genre.includes(g) ? newBook.genre.filter((x) => x !== g) : [...newBook.genre, g],
-                      })}
-                      className={`genre-tag ${newBook.genre.includes(g) ? "active" : ""}`}
-                    >
-                      {g}
-                    </button>
+                    <button key={g} type="button" onClick={() => setNewBook({
+                      ...newBook,
+                      genre: newBook.genre.includes(g) ? newBook.genre.filter((x) => x !== g) : [...newBook.genre, g],
+                    })} className={`genre-tag ${newBook.genre.includes(g) ? "active" : ""}`}>{g}</button>
                   ))}
                 </div>
               </div>
@@ -265,8 +244,7 @@ const Admin = () => {
                 Mark as trending
               </label>
               <Button variant="warm" size="lg" type="submit" className="w-full gap-2">
-                <BookOpen className="h-4 w-4" />
-                Add to Catalog
+                <BookOpen className="h-4 w-4" />Add to Catalog
               </Button>
             </form>
           </div>
