@@ -3,7 +3,7 @@ import { GENRES } from "@/data/books";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
@@ -17,7 +17,7 @@ const Admin = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [tab, setTab] = useState<"orders" | "requests" | "add-book">("orders");
+  const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory">("orders");
   const queryClient = useQueryClient();
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -26,7 +26,11 @@ const Admin = () => {
   const [loadingRequests, setLoadingRequests] = useState(false);
 
   const [newBook, setNewBook] = useState({
-    title: "", author: "", price: "", description: "", genre: [] as string[], isTrending: false,
+    title: "", author: "", price: "", description: "", genre: [] as string[], isTrending: false, imageUrl: "",
+  });
+
+  const [newAccessory, setNewAccessory] = useState({
+    name: "", description: "", price: "", category: "", imageUrl: "",
   });
 
   const fetchOrders = async () => {
@@ -90,14 +94,37 @@ const Admin = () => {
       description: newBook.description,
       genre: newBook.genre,
       is_trending: newBook.isTrending,
+      image_url: newBook.imageUrl,
     });
     if (error) {
       toast.error("Failed to add book.");
       return;
     }
     toast.success(`"${newBook.title}" added to the catalog!`);
-    setNewBook({ title: "", author: "", price: "", description: "", genre: [], isTrending: false });
+    setNewBook({ title: "", author: "", price: "", description: "", genre: [], isTrending: false, imageUrl: "" });
     queryClient.invalidateQueries({ queryKey: ["books"] });
+  };
+
+  const addAccessory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAccessory.name || !newAccessory.price) {
+      toast.error("Fill in required fields.");
+      return;
+    }
+    const { error } = await supabase.from("accessories").insert({
+      name: newAccessory.name,
+      description: newAccessory.description,
+      price: parseInt(newAccessory.price),
+      category: newAccessory.category || "General",
+      image_url: newAccessory.imageUrl,
+    });
+    if (error) {
+      toast.error("Failed to add accessory.");
+      return;
+    }
+    toast.success(`"${newAccessory.name}" added!`);
+    setNewAccessory({ name: "", description: "", price: "", category: "", imageUrl: "" });
+    queryClient.invalidateQueries({ queryKey: ["accessories"] });
   };
 
   if (!authenticated) {
@@ -134,10 +161,11 @@ const Admin = () => {
           <Button variant="ghost" onClick={() => setAuthenticated(false)} className="font-sans text-sm">Logout</Button>
         </div>
 
-        <div className="flex gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-8">
           <button className={tabClass("orders")} onClick={() => setTab("orders")}><Package className="inline-block h-4 w-4 mr-1.5" />Orders</button>
           <button className={tabClass("requests")} onClick={() => setTab("requests")}><MessageSquare className="inline-block h-4 w-4 mr-1.5" />Requests</button>
           <button className={tabClass("add-book")} onClick={() => setTab("add-book")}><Plus className="inline-block h-4 w-4 mr-1.5" />Add Book</button>
+          <button className={tabClass("add-accessory")} onClick={() => setTab("add-accessory")}><ShoppingBag className="inline-block h-4 w-4 mr-1.5" />Add Accessory</button>
         </div>
 
         {tab === "orders" && (
@@ -225,6 +253,15 @@ const Admin = () => {
                 <input type="number" className={inputClass} value={newBook.price} onChange={(e) => setNewBook({ ...newBook, price: e.target.value })} />
               </div>
               <div>
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Cover Image URL</label>
+                <input className={inputClass} placeholder="https://example.com/cover.jpg" value={newBook.imageUrl} onChange={(e) => setNewBook({ ...newBook, imageUrl: e.target.value })} />
+                {newBook.imageUrl && (
+                  <div className="mt-2 w-24 h-36 rounded overflow-hidden border border-border">
+                    <img src={newBook.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+              <div>
                 <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Description</label>
                 <textarea className={`${inputClass} min-h-[100px] resize-none`} value={newBook.description} onChange={(e) => setNewBook({ ...newBook, description: e.target.value })} />
               </div>
@@ -245,6 +282,41 @@ const Admin = () => {
               </label>
               <Button variant="warm" size="lg" type="submit" className="w-full gap-2">
                 <BookOpen className="h-4 w-4" />Add to Catalog
+              </Button>
+            </form>
+          </div>
+        )}
+
+        {tab === "add-accessory" && (
+          <div className="mx-auto max-w-lg">
+            <form onSubmit={addAccessory} className="space-y-5">
+              <div>
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Name *</label>
+                <input className={inputClass} value={newAccessory.name} onChange={(e) => setNewAccessory({ ...newAccessory, name: e.target.value })} />
+              </div>
+              <div>
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Price (DZD) *</label>
+                <input type="number" className={inputClass} value={newAccessory.price} onChange={(e) => setNewAccessory({ ...newAccessory, price: e.target.value })} />
+              </div>
+              <div>
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Category</label>
+                <input className={inputClass} placeholder="e.g. Bookmarks, Keychains, Lamps..." value={newAccessory.category} onChange={(e) => setNewAccessory({ ...newAccessory, category: e.target.value })} />
+              </div>
+              <div>
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Image URL</label>
+                <input className={inputClass} placeholder="https://example.com/image.jpg" value={newAccessory.imageUrl} onChange={(e) => setNewAccessory({ ...newAccessory, imageUrl: e.target.value })} />
+                {newAccessory.imageUrl && (
+                  <div className="mt-2 w-24 h-24 rounded overflow-hidden border border-border">
+                    <img src={newAccessory.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Description</label>
+                <textarea className={`${inputClass} min-h-[100px] resize-none`} value={newAccessory.description} onChange={(e) => setNewAccessory({ ...newAccessory, description: e.target.value })} />
+              </div>
+              <Button variant="warm" size="lg" type="submit" className="w-full gap-2">
+                <ShoppingBag className="h-4 w-4" />Add Accessory
               </Button>
             </form>
           </div>

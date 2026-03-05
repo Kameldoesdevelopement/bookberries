@@ -1,13 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Menu, X, BookOpen } from "lucide-react";
+import { ShoppingCart, Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import logo from "@/assets/bookberries-logo.png";
 
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Shop" },
   { to: "/request", label: "Request a Book" },
+  { to: "/contact", label: "Contact" },
 ];
 
 const Navbar = () => {
@@ -19,8 +21,8 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <BookOpen className="h-6 w-6 text-primary" />
-          <span className="font-display text-xl font-bold text-foreground">Kutub</span>
+          <img src={logo} alt="Bookberries logo" className="h-10 w-auto" />
+          <span className="font-display text-xl font-bold text-foreground">Bookberries</span>
         </Link>
 
         {/* Desktop nav */}

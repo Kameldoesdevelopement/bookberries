@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      accessories: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
       book_requests: {
         Row: {
           author: string
@@ -56,6 +86,7 @@ export type Database = {
           description: string
           genre: string[]
           id: string
+          image_url: string | null
           is_trending: boolean
           price: number
           title: string
@@ -68,6 +99,7 @@ export type Database = {
           description?: string
           genre?: string[]
           id?: string
+          image_url?: string | null
           is_trending?: boolean
           price: number
           title: string
@@ -80,6 +112,7 @@ export type Database = {
           description?: string
           genre?: string[]
           id?: string
+          image_url?: string | null
           is_trending?: boolean
           price?: number
           title?: string
