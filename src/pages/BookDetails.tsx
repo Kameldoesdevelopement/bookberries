@@ -49,14 +49,20 @@ const BookDetails = () => {
 
         <div className="grid gap-12 md:grid-cols-2">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="flex justify-center">
-            <div className={`aspect-[2/3] w-full max-w-sm rounded-lg bg-gradient-to-b ${book.cover_color} overflow-hidden shadow-xl`}>
-              <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-                <div className={`w-16 h-0.5 ${book.cover_accent} mb-6 opacity-60`} />
-                <h2 className="font-display text-2xl font-bold text-primary-foreground leading-tight mb-3">{book.title}</h2>
-                <p className="font-sans text-sm text-primary-foreground/70">{book.author}</p>
-                <div className={`w-10 h-0.5 ${book.cover_accent} mt-6 opacity-40`} />
+            {book.image_url ? (
+              <div className="aspect-[2/3] w-full max-w-sm rounded-lg overflow-hidden shadow-xl">
+                <img src={book.image_url} alt={book.title} className="w-full h-full object-cover" />
               </div>
-            </div>
+            ) : (
+              <div className={`aspect-[2/3] w-full max-w-sm rounded-lg bg-gradient-to-b ${book.cover_color} overflow-hidden shadow-xl`}>
+                <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+                  <div className={`w-16 h-0.5 ${book.cover_accent} mb-6 opacity-60`} />
+                  <h2 className="font-display text-2xl font-bold text-primary-foreground leading-tight mb-3">{book.title}</h2>
+                  <p className="font-sans text-sm text-primary-foreground/70">{book.author}</p>
+                  <div className={`w-10 h-0.5 ${book.cover_accent} mt-6 opacity-40`} />
+                </div>
+              </div>
+            )}
           </motion.div>
 
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="flex flex-col justify-center">

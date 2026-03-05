@@ -1,14 +1,20 @@
 import { useState, useMemo } from "react";
 import { GENRES } from "@/data/books";
 import { useBooks } from "@/hooks/useBooks";
+import { useAccessories } from "@/hooks/useAccessories";
 import BookCard from "@/components/BookCard";
+import AccessoryCard from "@/components/AccessoryCard";
 import { Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+type ShopTab = "books" | "accessories";
 
 const Shop = () => {
   const [search, setSearch] = useState("");
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
-  const { data: books = [], isLoading } = useBooks();
+  const [shopTab, setShopTab] = useState<ShopTab>("books");
+  const { data: books = [], isLoading: booksLoading } = useBooks();
+  const { data: accessories = [], isLoading: accessoriesLoading } = useAccessories();
 
   const filtered = useMemo(() => {
     return books.filter((b) => {
@@ -21,6 +27,19 @@ const Shop = () => {
     });
   }, [search, activeGenre, books]);
 
+  const filteredAccessories = useMemo(() => {
+    return accessories.filter((a) =>
+      !search || a.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, accessories]);
+
+  const tabClass = (t: ShopTab) =>
+    `px-6 py-3 font-sans text-sm font-semibold rounded-lg transition-all duration-200 ${
+      shopTab === t
+        ? "bg-primary text-primary-foreground shadow-md"
+        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+    }`;
+
   return (
     <main className="min-h-screen parchment-bg">
       <div className="container mx-auto px-4 py-12">
@@ -29,38 +48,78 @@ const Shop = () => {
           <p className="mt-2 text-muted-foreground">Find your next read among our curated collection.</p>
         </motion.div>
 
+        {/* Books / Accessories tabs */}
+        <div className="flex justify-center gap-3 mb-8">
+          <button className={tabClass("books")} onClick={() => { setShopTab("books"); setActiveGenre(null); }}>
+            📚 Books
+          </button>
+          <button className={tabClass("accessories")} onClick={() => { setShopTab("accessories"); setActiveGenre(null); }}>
+            🔖 Accessories
+          </button>
+        </div>
+
         <div className="relative mx-auto mb-8 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" placeholder="Search by title or author..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background py-3 pl-10 pr-4 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+          <input
+            type="text"
+            placeholder={shopTab === "books" ? "Search by title or author..." : "Search accessories..."}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-input bg-background py-3 pl-10 pr-4 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
         </div>
 
-        <div className="mb-10 flex flex-wrap justify-center gap-2">
-          <button onClick={() => setActiveGenre(null)} className={`genre-tag ${!activeGenre ? "active" : ""}`}>All</button>
-          {GENRES.map((g) => (
-            <button key={g} onClick={() => setActiveGenre(activeGenre === g ? null : g)} className={`genre-tag ${activeGenre === g ? "active" : ""}`}>{g}</button>
-          ))}
-        </div>
+        {shopTab === "books" && (
+          <>
+            <div className="mb-10 flex flex-wrap justify-center gap-2">
+              <button onClick={() => setActiveGenre(null)} className={`genre-tag ${!activeGenre ? "active" : ""}`}>All</button>
+              {GENRES.map((g) => (
+                <button key={g} onClick={() => setActiveGenre(activeGenre === g ? null : g)} className={`genre-tag ${activeGenre === g ? "active" : ""}`}>{g}</button>
+              ))}
+            </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-[2/3] animate-pulse rounded-lg bg-muted" />
-            ))}
-          </div>
-        ) : (
-          <AnimatePresence mode="wait">
-            {filtered.length > 0 ? (
-              <motion.div key={activeGenre || "all"} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
+            {booksLoading ? (
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="aspect-[2/3] animate-pulse rounded-lg bg-muted" />
+                ))}
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                {filtered.length > 0 ? (
+                  <motion.div key={activeGenre || "all"} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
+                    className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+                    {filtered.map((book) => (<BookCard key={book.id} book={book} />))}
+                  </motion.div>
+                ) : (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center">
+                    <p className="text-muted-foreground">No books found. Try a different search or filter.</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
+          </>
+        )}
+
+        {shopTab === "accessories" && (
+          <>
+            {accessoriesLoading ? (
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="aspect-square animate-pulse rounded-lg bg-muted" />
+                ))}
+              </div>
+            ) : filteredAccessories.length > 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-                {filtered.map((book) => (<BookCard key={book.id} book={book} />))}
+                {filteredAccessories.map((acc) => (<AccessoryCard key={acc.id} accessory={acc} />))}
               </motion.div>
             ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center">
-                <p className="text-muted-foreground">No books found. Try a different search or filter.</p>
-              </motion.div>
+              <div className="py-20 text-center">
+                <p className="text-muted-foreground">No accessories found.</p>
+              </div>
             )}
-          </AnimatePresence>
+          </>
         )}
       </div>
     </main>

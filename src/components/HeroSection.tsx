@@ -5,7 +5,6 @@ import heroImage from "@/assets/hero-bookstore.webp";
 
 const HeroSection = () => (
   <section className="relative min-h-[85vh] flex items-center overflow-hidden">
-    {/* Background image */}
     <div className="absolute inset-0">
       <img src={heroImage} alt="Warm bookstore interior" className="w-full h-full object-cover" />
       <div className="hero-overlay absolute inset-0" />
@@ -19,21 +18,28 @@ const HeroSection = () => (
         className="max-w-2xl"
       >
         <h1 className="font-display text-5xl font-bold leading-tight text-primary-foreground md:text-7xl text-balance">
-          Discover Your Next Story
+          Bookberries
         </h1>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="mt-6 max-w-lg text-lg text-primary-foreground/80 leading-relaxed"
+          className="mt-6 max-w-lg text-lg text-primary-foreground/80 leading-relaxed italic"
         >
-          Algeria's curated bookstore — browse thoughtfully selected titles, 
-          from timeless classics to contemporary voices. Delivered to your door.
+          Books choose their readers
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="mt-4 max-w-lg text-base text-primary-foreground/70 leading-relaxed"
+        >
+          Connecting readers across Algeria with the books they love — from timeless classics to the newest titles.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
           className="mt-8 flex flex-wrap gap-4"
         >
           <Button variant="hero" size="lg" asChild>

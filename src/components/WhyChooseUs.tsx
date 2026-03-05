@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 const features = [
   {
     icon: Truck,
-    title: "All 48 Wilayas",
+    title: "All 58 Wilayas",
     description: "Fast delivery across Algeria with cash on delivery.",
   },
   {
@@ -28,7 +28,7 @@ const WhyChooseUs = () => (
         viewport={{ once: true }}
         className="font-display text-3xl font-bold text-center text-foreground mb-12 md:text-4xl"
       >
-        Why Kutub?
+        Why Bookberries?
       </motion.h2>
       <div className="grid gap-8 md:grid-cols-3">
         {features.map((f, i) => (
