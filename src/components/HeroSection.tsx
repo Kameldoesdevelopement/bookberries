@@ -46,9 +46,8 @@ const HeroSection = () => (
             <Link to="/shop">Shop Now</Link>
           </Button>
           <Button
-            variant="outline"
+            variant="warm"
             size="lg"
-            className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 font-sans"
             asChild
           >
             <Link to="/request">Request a Book</Link>
