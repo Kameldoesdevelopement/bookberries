@@ -1,4 +1,5 @@
 import type { Accessory } from "@/hooks/useAccessories";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -54,7 +55,8 @@ const AccessoryCard = ({ accessory }: AccessoryCardProps) => {
       transition={{ duration: 0.4 }}
       className="book-card block group"
     >
-      <div className="aspect-square bg-muted relative overflow-hidden">
+      <Link to={`/accessory/${accessory.id}`} className="block">
+        <div className="aspect-square bg-muted relative overflow-hidden">
         {imageUrl ? (
           <img src={imageUrl} alt={accessory.name} className="w-full h-full object-cover" />
         ) : (
@@ -62,7 +64,8 @@ const AccessoryCard = ({ accessory }: AccessoryCardProps) => {
             <h3 className="font-display text-lg font-bold text-foreground leading-tight">{accessory.name}</h3>
           </div>
         )}
-      </div>
+        </div>
+      </Link>
       <div className="p-4">
         <h3 className="font-display text-sm font-semibold text-foreground leading-tight mb-1 line-clamp-1">{accessory.name}</h3>
         <p className="font-sans text-xs text-muted-foreground mb-2">{accessory.category}</p>
