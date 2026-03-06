@@ -4,6 +4,22 @@ import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 
+import accBookmarks from "@/assets/acc-bookmarks.jpg";
+import accKeychains from "@/assets/acc-keychains.jpg";
+import accReadingLamp from "@/assets/acc-reading-lamp.jpg";
+import accMetalBookmarks from "@/assets/acc-metal-bookmarks.jpg";
+import accStickyTabs from "@/assets/acc-sticky-tabs.jpg";
+import accNotebookSet from "@/assets/acc-notebook-set.jpg";
+
+const localImageMap: Record<string, string> = {
+  "Bookmarks": accBookmarks,
+  "Keychains": accKeychains,
+  "Reading Lamp": accReadingLamp,
+  "Metal Bookmarks": accMetalBookmarks,
+  "Sticky Index Tabs": accStickyTabs,
+  "Artistic Notebook Diary Set": accNotebookSet,
+};
+
 interface AccessoryCardProps {
   accessory: Accessory;
 }
@@ -11,8 +27,9 @@ interface AccessoryCardProps {
 const AccessoryCard = ({ accessory }: AccessoryCardProps) => {
   const { addToCart } = useCart();
 
+  const imageUrl = accessory.image_url || localImageMap[accessory.name];
+
   const handleAdd = () => {
-    // Create a book-like object for the cart
     addToCart({
       id: accessory.id,
       title: accessory.name,
@@ -37,12 +54,12 @@ const AccessoryCard = ({ accessory }: AccessoryCardProps) => {
       transition={{ duration: 0.4 }}
       className="book-card block group"
     >
-      <div className="aspect-square bg-gradient-to-b from-emerald-700 to-emerald-900 relative overflow-hidden">
-        {accessory.image_url ? (
-          <img src={accessory.image_url} alt={accessory.name} className="w-full h-full object-cover" />
+      <div className="aspect-square bg-muted relative overflow-hidden">
+        {imageUrl ? (
+          <img src={imageUrl} alt={accessory.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
-            <h3 className="font-display text-lg font-bold text-primary-foreground leading-tight">{accessory.name}</h3>
+          <div className="absolute inset-0 flex items-center justify-center p-4 text-center bg-secondary">
+            <h3 className="font-display text-lg font-bold text-foreground leading-tight">{accessory.name}</h3>
           </div>
         )}
       </div>

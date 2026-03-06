@@ -41,7 +41,7 @@ const RequestBook = () => {
       <div className="container mx-auto px-4 py-16">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-lg">
           <h1 className="font-display text-3xl font-bold text-foreground text-center md:text-4xl">Request a Book</h1>
-          <p className="mt-3 text-center text-muted-foreground mb-10">Can't find what you're looking for? Tell us and we'll try to get it for you.</p>
+          <p className="mt-3 text-center text-muted-foreground mb-10">Drop the book you're looking for (title + author), and let us know if you have any special requests.</p>
 
           {submitted ? (
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-lg border border-border bg-card p-8 text-center">
