@@ -78,7 +78,7 @@ const Navbar = () => {
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Find the book you're looking for"
               value={mobileSearch}
               onChange={(e) => setMobileSearch(e.target.value)}
               className="w-full rounded-full border border-input bg-secondary/50 py-1.5 pl-8 pr-3 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
