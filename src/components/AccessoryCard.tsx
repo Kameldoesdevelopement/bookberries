@@ -12,8 +12,8 @@ import accStickyTabs from "@/assets/acc-sticky-tabs.jpg";
 import accNotebookSet from "@/assets/acc-notebook-set.jpg";
 
 const localImageMap: Record<string, string> = {
-  "Bookmarks": accBookmarks,
-  "Keychains": accKeychains,
+  "Bookmarks Set": accBookmarks,
+  "Book Keychains": accKeychains,
   "Reading Lamp": accReadingLamp,
   "Metal Bookmarks": accMetalBookmarks,
   "Sticky Index Tabs": accStickyTabs,
