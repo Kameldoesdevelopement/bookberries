@@ -8,10 +8,12 @@ import { toast } from "sonner";
 import { CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+const DELIVERY_FEES = { home: 750, pickup: 500 } as const;
+
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", phone: "", wilaya: "", deliveryType: "home" });
+  const [form, setForm] = useState({ name: "", phone: "", wilaya: "", deliveryType: "home" as "home" | "pickup", address: "" });
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -20,21 +22,27 @@ const Checkout = () => {
     return null;
   }
 
+  const deliveryFee = DELIVERY_FEES[form.deliveryType];
+  const grandTotal = totalPrice + deliveryFee;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.phone || !form.wilaya) {
       toast.error("Please fill in all required fields.");
       return;
     }
+    if (form.deliveryType === "home" && !form.address.trim()) {
+      toast.error("Please enter your full address for home delivery.");
+      return;
+    }
     setLoading(true);
     
-    // Create order
     const { data: order, error: orderError } = await supabase.from("orders").insert({
       customer_name: form.name,
       phone: form.phone,
       wilaya: form.wilaya,
-      delivery_type: form.deliveryType,
-      total_price: totalPrice,
+      delivery_type: form.deliveryType === "home" ? `home - ${form.address}` : "pickup",
+      total_price: grandTotal,
     }).select().single();
 
     if (orderError || !order) {
@@ -43,7 +51,6 @@ const Checkout = () => {
       return;
     }
 
-    // Create order items
     const { error: itemsError } = await supabase.from("order_items").insert(
       items.map((item) => ({
         order_id: order.id,
@@ -95,9 +102,19 @@ const Checkout = () => {
                 <span className="font-sans text-sm font-medium text-primary">{(item.book.price * item.quantity).toLocaleString()} DZD</span>
               </div>
             ))}
-            <div className="flex justify-between pt-3 mt-2">
+            <div className="flex justify-between pt-3 mt-2 border-t border-border">
+              <span className="font-sans text-sm text-muted-foreground">Subtotal</span>
+              <span className="font-sans text-sm text-foreground">{totalPrice.toLocaleString()} DZD</span>
+            </div>
+            <div className="flex justify-between pt-1">
+              <span className="font-sans text-sm text-muted-foreground">
+                Delivery ({form.deliveryType === "home" ? "Home" : "Wilaya Pickup"})
+              </span>
+              <span className="font-sans text-sm text-foreground">{deliveryFee.toLocaleString()} DZD</span>
+            </div>
+            <div className="flex justify-between pt-3 mt-2 border-t border-border">
               <span className="font-sans text-sm font-semibold text-foreground">Total</span>
-              <span className="font-display text-lg font-bold text-primary">{totalPrice.toLocaleString()} DZD</span>
+              <span className="font-display text-lg font-bold text-primary">{grandTotal.toLocaleString()} DZD</span>
             </div>
           </div>
 
@@ -122,16 +139,28 @@ const Checkout = () => {
               <div className="flex gap-4 mt-2">
                 <label className="flex items-center gap-2 font-sans text-sm text-foreground cursor-pointer">
                   <input type="radio" name="delivery" checked={form.deliveryType === "home"} onChange={() => setForm({ ...form, deliveryType: "home" })} className="accent-primary" />
-                  Home Delivery
+                  Home Delivery (750 DZD)
                 </label>
                 <label className="flex items-center gap-2 font-sans text-sm text-foreground cursor-pointer">
                   <input type="radio" name="delivery" checked={form.deliveryType === "pickup"} onChange={() => setForm({ ...form, deliveryType: "pickup" })} className="accent-primary" />
-                  Wilaya Pickup
+                  Wilaya Pickup (500 DZD)
                 </label>
               </div>
             </div>
+            {form.deliveryType === "home" && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Full Address *</label>
+                <textarea
+                  className={inputClass + " resize-none"}
+                  rows={3}
+                  placeholder="Street, building, apartment number, neighborhood..."
+                  value={form.address}
+                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                />
+              </motion.div>
+            )}
             <Button variant="warm" size="lg" type="submit" className="w-full" disabled={loading}>
-              {loading ? "Placing Order..." : "Place Order"}
+              {loading ? "Placing Order..." : `Place Order — ${grandTotal.toLocaleString()} DZD`}
             </Button>
           </form>
         </motion.div>
