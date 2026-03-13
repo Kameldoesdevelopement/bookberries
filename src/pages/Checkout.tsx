@@ -2,18 +2,26 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { WILAYAS } from "@/data/books";
+import { WILAYA_DESKS, NO_DESK_WILAYAS } from "@/data/desks";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-const DELIVERY_FEES = { home: 750, pickup: 500 } as const;
+const DELIVERY_FEES = { home: 750, pickup: 570 } as const;
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", phone: "", wilaya: "", deliveryType: "home" as "home" | "pickup", address: "" });
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    wilaya: "",
+    deliveryType: "home" as "home" | "pickup",
+    address: "",
+    desk: "",
+  });
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -22,8 +30,23 @@ const Checkout = () => {
     return null;
   }
 
-  const deliveryFee = DELIVERY_FEES[form.deliveryType];
+  const canPickup = !NO_DESK_WILAYAS.includes(form.wilaya);
+  const desks = form.wilaya ? WILAYA_DESKS[form.wilaya] : null;
+
+  // If wilaya has no desk option, force home delivery
+  const effectiveDeliveryType = !canPickup ? "home" : form.deliveryType;
+  const deliveryFee = DELIVERY_FEES[effectiveDeliveryType];
   const grandTotal = totalPrice + deliveryFee;
+
+  const handleWilayaChange = (wilaya: string) => {
+    const noDesk = NO_DESK_WILAYAS.includes(wilaya);
+    setForm({
+      ...form,
+      wilaya,
+      desk: "",
+      deliveryType: noDesk ? "home" : form.deliveryType,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,19 +54,35 @@ const Checkout = () => {
       toast.error("Please fill in all required fields.");
       return;
     }
-    if (form.deliveryType === "home" && !form.address.trim()) {
+    if (effectiveDeliveryType === "home" && !form.address.trim()) {
       toast.error("Please enter your full address for home delivery.");
       return;
     }
+    if (effectiveDeliveryType === "pickup" && desks && desks.length > 1 && !form.desk) {
+      toast.error("Please select a pickup desk.");
+      return;
+    }
     setLoading(true);
-    
-    const { data: order, error: orderError } = await supabase.from("orders").insert({
-      customer_name: form.name,
-      phone: form.phone,
-      wilaya: form.wilaya,
-      delivery_type: form.deliveryType === "home" ? `home - ${form.address}` : "pickup",
-      total_price: grandTotal,
-    }).select().single();
+
+    let deliveryInfo: string;
+    if (effectiveDeliveryType === "home") {
+      deliveryInfo = `home - ${form.address}`;
+    } else {
+      const deskName = form.desk || (desks ? desks[0] : `مكتب ${form.wilaya}`);
+      deliveryInfo = `pickup - ${deskName}`;
+    }
+
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        customer_name: form.name,
+        phone: form.phone,
+        wilaya: form.wilaya,
+        delivery_type: deliveryInfo,
+        total_price: grandTotal,
+      })
+      .select()
+      .single();
 
     if (orderError || !order) {
       toast.error("Failed to place order. Please try again.");
@@ -65,7 +104,7 @@ const Checkout = () => {
     if (itemsError) {
       toast.error("Order placed but items may not have saved correctly.");
     }
-    
+
     setSuccess(true);
     clearCart();
     toast.success("Order placed successfully!");
@@ -77,11 +116,22 @@ const Checkout = () => {
   if (success) {
     return (
       <main className="min-h-screen parchment-bg flex items-center justify-center">
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mx-auto max-w-md text-center p-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mx-auto max-w-md text-center p-8"
+        >
           <CheckCircle className="mx-auto h-16 w-16 text-primary mb-4" />
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">Order Confirmed!</h1>
-          <p className="text-muted-foreground mb-6">Your order has been placed. We'll deliver it to {form.wilaya} soon. Cash on delivery.</p>
-          <Button variant="warm" onClick={() => navigate("/shop")}>Continue Shopping</Button>
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+            Order Confirmed!
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            Your order has been placed. We'll deliver it to {form.wilaya} soon.
+            Cash on delivery.
+          </p>
+          <Button variant="warm" onClick={() => navigate("/shop")}>
+            Continue Shopping
+          </Button>
         </motion.div>
       </main>
     );
@@ -90,77 +140,203 @@ const Checkout = () => {
   return (
     <main className="min-h-screen parchment-bg">
       <div className="container mx-auto px-4 py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-lg">
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Checkout</h1>
-          <p className="text-muted-foreground mb-8">Cash on delivery — no payment needed now.</p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-auto max-w-lg"
+        >
+          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+            Checkout
+          </h1>
+          <p className="text-muted-foreground mb-8">
+            Cash on delivery — no payment needed now.
+          </p>
 
           <div className="rounded-lg border border-border bg-card p-4 mb-8">
-            <h2 className="font-sans text-sm font-semibold text-foreground mb-3">Your Items</h2>
+            <h2 className="font-sans text-sm font-semibold text-foreground mb-3">
+              Your Items
+            </h2>
             {items.map((item) => (
-              <div key={item.book.id} className="flex justify-between py-1.5 border-b border-border last:border-0">
-                <span className="font-sans text-sm text-foreground">{item.book.title} × {item.quantity}</span>
-                <span className="font-sans text-sm font-medium text-primary">{(item.book.price * item.quantity).toLocaleString()} DZD</span>
+              <div
+                key={item.book.id}
+                className="flex justify-between py-1.5 border-b border-border last:border-0"
+              >
+                <span className="font-sans text-sm text-foreground">
+                  {item.book.title} × {item.quantity}
+                </span>
+                <span className="font-sans text-sm font-medium text-primary">
+                  {(item.book.price * item.quantity).toLocaleString()} DZD
+                </span>
               </div>
             ))}
             <div className="flex justify-between pt-3 mt-2 border-t border-border">
-              <span className="font-sans text-sm text-muted-foreground">Subtotal</span>
-              <span className="font-sans text-sm text-foreground">{totalPrice.toLocaleString()} DZD</span>
+              <span className="font-sans text-sm text-muted-foreground">
+                Subtotal
+              </span>
+              <span className="font-sans text-sm text-foreground">
+                {totalPrice.toLocaleString()} DZD
+              </span>
             </div>
             <div className="flex justify-between pt-1">
               <span className="font-sans text-sm text-muted-foreground">
-                Delivery ({form.deliveryType === "home" ? "Home" : "Wilaya Pickup"})
+                Delivery (
+                {effectiveDeliveryType === "home"
+                  ? "Home — 750 DZD"
+                  : "Desk Pickup — 570 DZD"}
+                )
               </span>
-              <span className="font-sans text-sm text-foreground">{deliveryFee.toLocaleString()} DZD</span>
+              <span className="font-sans text-sm text-foreground">
+                {deliveryFee.toLocaleString()} DZD
+              </span>
             </div>
             <div className="flex justify-between pt-3 mt-2 border-t border-border">
-              <span className="font-sans text-sm font-semibold text-foreground">Total</span>
-              <span className="font-display text-lg font-bold text-primary">{grandTotal.toLocaleString()} DZD</span>
+              <span className="font-sans text-sm font-semibold text-foreground">
+                Total
+              </span>
+              <span className="font-display text-lg font-bold text-primary">
+                {grandTotal.toLocaleString()} DZD
+              </span>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Full Name *</label>
-              <input className={inputClass} placeholder="Your full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">
+                Full Name *
+              </label>
+              <input
+                className={inputClass}
+                placeholder="Your full name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
             </div>
             <div>
-              <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Phone Number *</label>
-              <input type="tel" className={inputClass} placeholder="0XXX XXX XXX" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                className={inputClass}
+                placeholder="0XXX XXX XXX"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
             </div>
             <div>
-              <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Wilaya *</label>
-              <select className={inputClass} value={form.wilaya} onChange={(e) => setForm({ ...form, wilaya: e.target.value })}>
+              <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">
+                Wilaya *
+              </label>
+              <select
+                className={inputClass}
+                value={form.wilaya}
+                onChange={(e) => handleWilayaChange(e.target.value)}
+              >
                 <option value="">Select your wilaya</option>
-                {WILAYAS.map((w) => (<option key={w} value={w}>{w}</option>))}
+                {WILAYAS.map((w) => (
+                  <option key={w} value={w}>
+                    {w}
+                  </option>
+                ))}
               </select>
             </div>
-            <div>
-              <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Delivery Type</label>
-              <div className="flex gap-4 mt-2">
-                <label className="flex items-center gap-2 font-sans text-sm text-foreground cursor-pointer">
-                  <input type="radio" name="delivery" checked={form.deliveryType === "home"} onChange={() => setForm({ ...form, deliveryType: "home" })} className="accent-primary" />
-                  Home Delivery (750 DZD)
+
+            {form.wilaya && (
+              <div>
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">
+                  Delivery Type
                 </label>
-                <label className="flex items-center gap-2 font-sans text-sm text-foreground cursor-pointer">
-                  <input type="radio" name="delivery" checked={form.deliveryType === "pickup"} onChange={() => setForm({ ...form, deliveryType: "pickup" })} className="accent-primary" />
-                  Wilaya Pickup (500 DZD)
-                </label>
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center gap-2 font-sans text-sm text-foreground cursor-pointer">
+                    <input
+                      type="radio"
+                      name="delivery"
+                      checked={effectiveDeliveryType === "home"}
+                      onChange={() =>
+                        setForm({ ...form, deliveryType: "home", desk: "" })
+                      }
+                      className="accent-primary"
+                    />
+                    Home Delivery (750 DZD)
+                  </label>
+                  {canPickup && (
+                    <label className="flex items-center gap-2 font-sans text-sm text-foreground cursor-pointer">
+                      <input
+                        type="radio"
+                        name="delivery"
+                        checked={effectiveDeliveryType === "pickup"}
+                        onChange={() =>
+                          setForm({ ...form, deliveryType: "pickup" })
+                        }
+                        className="accent-primary"
+                      />
+                      Desk Pickup (570 DZD)
+                    </label>
+                  )}
+                </div>
+                {!canPickup && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Desk pickup is not available for {form.wilaya}. Home delivery
+                    only.
+                  </p>
+                )}
               </div>
-            </div>
-            {form.deliveryType === "home" && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Full Address *</label>
+            )}
+
+            {effectiveDeliveryType === "pickup" && desks && desks.length > 1 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+              >
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">
+                  Select Pickup Desk *
+                </label>
+                <select
+                  className={inputClass}
+                  value={form.desk}
+                  onChange={(e) => setForm({ ...form, desk: e.target.value })}
+                >
+                  <option value="">Choose a desk</option>
+                  {desks.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </motion.div>
+            )}
+
+            {effectiveDeliveryType === "home" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">
+                  Full Address *
+                </label>
                 <textarea
                   className={inputClass + " resize-none"}
                   rows={3}
                   placeholder="Street, building, apartment number, neighborhood..."
                   value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, address: e.target.value })
+                  }
                 />
               </motion.div>
             )}
-            <Button variant="warm" size="lg" type="submit" className="w-full" disabled={loading}>
-              {loading ? "Placing Order..." : `Place Order — ${grandTotal.toLocaleString()} DZD`}
+
+            <Button
+              variant="warm"
+              size="lg"
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading
+                ? "Placing Order..."
+                : `Place Order — ${grandTotal.toLocaleString()} DZD`}
             </Button>
           </form>
         </motion.div>
