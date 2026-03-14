@@ -2,14 +2,12 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { WILAYAS } from "@/data/books";
-import { WILAYA_DESKS, NO_DESK_WILAYAS } from "@/data/desks";
+import { WILAYA_DESKS, NO_DESK_WILAYAS, WILAYA_PRICING } from "@/data/desks";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-const DELIVERY_FEES = { home: 750, pickup: 570 } as const;
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
@@ -30,16 +28,20 @@ const Checkout = () => {
     return null;
   }
 
-  const canPickup = !NO_DESK_WILAYAS.includes(form.wilaya);
+  const canPickup = !NO_DESK_WILAYAS.includes(form.wilaya) && 
+    (form.wilaya ? (WILAYA_PRICING[form.wilaya]?.desk ?? 0) > 0 : true);
   const desks = form.wilaya ? WILAYA_DESKS[form.wilaya] : null;
 
-  // If wilaya has no desk option, force home delivery
   const effectiveDeliveryType = !canPickup ? "home" : form.deliveryType;
-  const deliveryFee = DELIVERY_FEES[effectiveDeliveryType];
+  
+  const pricing = form.wilaya ? WILAYA_PRICING[form.wilaya] : null;
+  const deliveryFee = pricing
+    ? (effectiveDeliveryType === "home" ? pricing.home : pricing.desk)
+    : 0;
   const grandTotal = totalPrice + deliveryFee;
 
   const handleWilayaChange = (wilaya: string) => {
-    const noDesk = NO_DESK_WILAYAS.includes(wilaya);
+    const noDesk = NO_DESK_WILAYAS.includes(wilaya) || (WILAYA_PRICING[wilaya]?.desk ?? 0) === 0;
     setForm({
       ...form,
       wilaya,
@@ -177,18 +179,20 @@ const Checkout = () => {
                 {totalPrice.toLocaleString()} DZD
               </span>
             </div>
-            <div className="flex justify-between pt-1">
-              <span className="font-sans text-sm text-muted-foreground">
-                Delivery (
-                {effectiveDeliveryType === "home"
-                  ? "Home — 750 DZD"
-                  : "Desk Pickup — 570 DZD"}
-                )
-              </span>
-              <span className="font-sans text-sm text-foreground">
-                {deliveryFee.toLocaleString()} DZD
-              </span>
-            </div>
+            {form.wilaya && (
+              <div className="flex justify-between pt-1">
+                <span className="font-sans text-sm text-muted-foreground">
+                  Delivery (
+                  {effectiveDeliveryType === "home"
+                    ? `Home — ${pricing?.home.toLocaleString()} DZD`
+                    : `Desk Pickup — ${pricing?.desk.toLocaleString()} DZD`}
+                  )
+                </span>
+                <span className="font-sans text-sm text-foreground">
+                  {deliveryFee.toLocaleString()} DZD
+                </span>
+              </div>
+            )}
             <div className="flex justify-between pt-3 mt-2 border-t border-border">
               <span className="font-sans text-sm font-semibold text-foreground">
                 Total
@@ -257,7 +261,7 @@ const Checkout = () => {
                       }
                       className="accent-primary"
                     />
-                    Home Delivery (750 DZD)
+                    Home Delivery ({pricing?.home.toLocaleString()} DZD)
                   </label>
                   {canPickup && (
                     <label className="flex items-center gap-2 font-sans text-sm text-foreground cursor-pointer">
@@ -270,7 +274,7 @@ const Checkout = () => {
                         }
                         className="accent-primary"
                       />
-                      Desk Pickup (570 DZD)
+                      Desk Pickup ({pricing?.desk.toLocaleString()} DZD)
                     </label>
                   )}
                 </div>
@@ -332,11 +336,13 @@ const Checkout = () => {
               size="lg"
               type="submit"
               className="w-full"
-              disabled={loading}
+              disabled={loading || !form.wilaya}
             >
               {loading
                 ? "Placing Order..."
-                : `Place Order — ${grandTotal.toLocaleString()} DZD`}
+                : form.wilaya
+                  ? `Place Order — ${grandTotal.toLocaleString()} DZD`
+                  : "Select a wilaya to continue"}
             </Button>
           </form>
         </motion.div>
