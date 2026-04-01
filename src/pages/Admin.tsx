@@ -19,7 +19,7 @@ const Admin = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books">("orders");
+  const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books" | "manage-accessories">("orders");
   const queryClient = useQueryClient();
 
   const [orders, setOrders] = useState<Order[]>([]);
