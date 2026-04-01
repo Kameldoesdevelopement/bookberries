@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2, ShoppingBag, Library } from "lucide-react";
 import ManageBooks from "@/components/admin/ManageBooks";
+import ManageAccessories from "@/components/admin/ManageAccessories";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
@@ -18,7 +19,7 @@ const Admin = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books">("orders");
+  const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books" | "manage-accessories">("orders");
   const queryClient = useQueryClient();
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -168,6 +169,7 @@ const Admin = () => {
           <button className={tabClass("add-book")} onClick={() => setTab("add-book")}><Plus className="inline-block h-4 w-4 mr-1.5" />Add Book</button>
           <button className={tabClass("add-accessory")} onClick={() => setTab("add-accessory")}><ShoppingBag className="inline-block h-4 w-4 mr-1.5" />Add Accessory</button>
           <button className={tabClass("manage-books")} onClick={() => setTab("manage-books")}><Library className="inline-block h-4 w-4 mr-1.5" />Manage Books</button>
+          <button className={tabClass("manage-accessories")} onClick={() => setTab("manage-accessories")}><ShoppingBag className="inline-block h-4 w-4 mr-1.5" />Manage Accessories</button>
         </div>
 
         {tab === "orders" && (
@@ -325,6 +327,7 @@ const Admin = () => {
         )}
 
         {tab === "manage-books" && <ManageBooks />}
+        {tab === "manage-accessories" && <ManageAccessories />}
       </div>
     </main>
   );
