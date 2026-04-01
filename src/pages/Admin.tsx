@@ -167,6 +167,7 @@ const Admin = () => {
           <button className={tabClass("requests")} onClick={() => setTab("requests")}><MessageSquare className="inline-block h-4 w-4 mr-1.5" />Requests</button>
           <button className={tabClass("add-book")} onClick={() => setTab("add-book")}><Plus className="inline-block h-4 w-4 mr-1.5" />Add Book</button>
           <button className={tabClass("add-accessory")} onClick={() => setTab("add-accessory")}><ShoppingBag className="inline-block h-4 w-4 mr-1.5" />Add Accessory</button>
+          <button className={tabClass("manage-books")} onClick={() => setTab("manage-books")}><Library className="inline-block h-4 w-4 mr-1.5" />Manage Books</button>
         </div>
 
         {tab === "orders" && (
