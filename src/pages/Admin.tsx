@@ -323,6 +323,8 @@ const Admin = () => {
             </form>
           </div>
         )}
+
+        {tab === "manage-books" && <ManageBooks />}
       </div>
     </main>
   );
