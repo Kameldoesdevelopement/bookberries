@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2, ShoppingBag, Library } from "lucide-react";
 import ManageBooks from "@/components/admin/ManageBooks";
+import ManageAccessories from "@/components/admin/ManageAccessories";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
