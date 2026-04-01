@@ -34,6 +34,10 @@ export const GENRES = [
   "Science",
   "French Books",
   "Arabic Books",
+  "Young Adult Romance",
+  "Philosophy",
+  "Dark Academia",
+  "Manga",
 ] as const;
 
 export const WILAYAS = [
