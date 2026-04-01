@@ -3,7 +3,8 @@ import { GENRES } from "@/data/books";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2, ShoppingBag } from "lucide-react";
+import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2, ShoppingBag, Library } from "lucide-react";
+import ManageBooks from "@/components/admin/ManageBooks";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
@@ -17,7 +18,7 @@ const Admin = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory">("orders");
+  const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books">("orders");
   const queryClient = useQueryClient();
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -166,6 +167,7 @@ const Admin = () => {
           <button className={tabClass("requests")} onClick={() => setTab("requests")}><MessageSquare className="inline-block h-4 w-4 mr-1.5" />Requests</button>
           <button className={tabClass("add-book")} onClick={() => setTab("add-book")}><Plus className="inline-block h-4 w-4 mr-1.5" />Add Book</button>
           <button className={tabClass("add-accessory")} onClick={() => setTab("add-accessory")}><ShoppingBag className="inline-block h-4 w-4 mr-1.5" />Add Accessory</button>
+          <button className={tabClass("manage-books")} onClick={() => setTab("manage-books")}><Library className="inline-block h-4 w-4 mr-1.5" />Manage Books</button>
         </div>
 
         {tab === "orders" && (
@@ -321,6 +323,8 @@ const Admin = () => {
             </form>
           </div>
         )}
+
+        {tab === "manage-books" && <ManageBooks />}
       </div>
     </main>
   );
