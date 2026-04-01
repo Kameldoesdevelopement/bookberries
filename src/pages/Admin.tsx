@@ -3,24 +3,22 @@ import { GENRES } from "@/data/books";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2, ShoppingBag, Library, LogOut } from "lucide-react";
+import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2, ShoppingBag, Library } from "lucide-react";
 import ManageBooks from "@/components/admin/ManageBooks";
 import ManageAccessories from "@/components/admin/ManageAccessories";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
-import type { Session } from "@supabase/supabase-js";
+
+const ADMIN_PASSWORD = "kutub2026";
 
 type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
 type BookRequest = Tables<"book_requests">;
 
 const Admin = () => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [authLoading, setAuthLoading] = useState(false);
   const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books" | "manage-accessories">("orders");
   const queryClient = useQueryClient();
 
@@ -37,19 +35,6 @@ const Admin = () => {
     name: "", description: "", price: "", category: "", imageUrl: "",
   });
 
-  // Auth listener
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setLoading(false);
-    });
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
   const fetchOrders = async () => {
     setLoadingOrders(true);
     const { data } = await supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
@@ -65,27 +50,19 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (session) {
+    if (authenticated) {
       fetchOrders();
       fetchRequests();
     }
-  }, [session]);
+  }, [authenticated]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setAuthLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast.error(error.message);
+    if (password === ADMIN_PASSWORD) {
+      setAuthenticated(true);
+    } else {
+      toast.error("Incorrect password");
     }
-    setAuthLoading(false);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setOrders([]);
-    setRequests([]);
   };
 
   const markOrderCompleted = async (id: string) => {
@@ -152,39 +129,22 @@ const Admin = () => {
     queryClient.invalidateQueries({ queryKey: ["accessories"] });
   };
 
-  if (loading) {
-    return (
-      <main className="min-h-screen parchment-bg flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </main>
-    );
-  }
-
-  if (!session) {
+  if (!authenticated) {
     return (
       <main className="min-h-screen parchment-bg flex items-center justify-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-sm w-full px-4">
           <div className="rounded-lg border border-border bg-card p-8 text-center">
             <Lock className="mx-auto h-10 w-10 text-primary mb-4" />
             <h1 className="font-display text-2xl font-bold text-foreground mb-2">Admin Access</h1>
-            <p className="text-sm text-muted-foreground mb-6">Sign in with your admin account.</p>
+            <p className="text-sm text-muted-foreground mb-6">Enter the admin password to continue.</p>
             <form onSubmit={handleLogin} className="space-y-4">
-              <input
-                type="email"
-                className="w-full rounded-lg border border-input bg-background px-4 py-3 font-sans text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} className="w-full rounded-lg border border-input bg-background px-4 py-3 pr-10 font-sans text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              <Button variant="warm" className="w-full" type="submit" disabled={authLoading}>
-                {authLoading ? "Signing in..." : "Sign In"}
-              </Button>
+              <Button variant="warm" className="w-full" type="submit">Enter</Button>
             </form>
           </div>
         </motion.div>
@@ -200,12 +160,7 @@ const Admin = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="font-display text-3xl font-bold text-foreground">Dashboard</h1>
-          <div className="flex items-center gap-3">
-            <span className="font-sans text-xs text-muted-foreground hidden sm:inline">{session.user.email}</span>
-            <Button variant="ghost" onClick={handleLogout} className="font-sans text-sm gap-1.5">
-              <LogOut className="h-4 w-4" />Logout
-            </Button>
-          </div>
+          <Button variant="ghost" onClick={() => setAuthenticated(false)} className="font-sans text-sm">Logout</Button>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-8">
