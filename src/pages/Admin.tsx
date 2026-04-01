@@ -327,6 +327,7 @@ const Admin = () => {
         )}
 
         {tab === "manage-books" && <ManageBooks />}
+        {tab === "manage-accessories" && <ManageAccessories />}
       </div>
     </main>
   );
