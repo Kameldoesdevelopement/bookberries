@@ -30,7 +30,8 @@ const ManageBooks = () => {
 
   const deleteBook = async (id: string, title: string) => {
     if (!confirm(`Delete "${title}"?`)) return;
-    await supabase.from("books").delete().eq("id", id);
+    const { error } = await supabase.from("books").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete: " + error.message); return; }
     setBooks(books.filter((b) => b.id !== id));
     queryClient.invalidateQueries({ queryKey: ["books"] });
     toast.success(`"${title}" deleted`);
