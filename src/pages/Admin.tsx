@@ -199,7 +199,7 @@ const Admin = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="font-display text-3xl font-bold text-foreground">Dashboard</h1>
-          <Button variant="ghost" onClick={() => setAuthenticated(false)} className="font-sans text-sm">Logout</Button>
+          <Button variant="ghost" onClick={handleLogout} className="font-sans text-sm">Logout</Button>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-8">
