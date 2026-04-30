@@ -75,13 +75,10 @@ const Admin = () => {
   useEffect(() => {
     if (!session) return;
     (async () => {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      setIsAdmin(!error && !!data);
+      // First-time bootstrap: if no admin exists yet, claim it
+      await supabase.rpc("claim_admin_if_first" as never);
+      const { data, error } = await supabase.rpc("is_current_user_admin" as never);
+      setIsAdmin(!error && data === true);
       setAuthChecked(true);
     })();
   }, [session]);
