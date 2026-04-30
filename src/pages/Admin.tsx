@@ -162,23 +162,29 @@ const Admin = () => {
     queryClient.invalidateQueries({ queryKey: ["accessories"] });
   };
 
-  if (!authenticated) {
+  if (!authChecked) {
     return (
       <main className="min-h-screen parchment-bg flex items-center justify-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-sm w-full px-4">
-          <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <Lock className="mx-auto h-10 w-10 text-primary mb-4" />
-            <h1 className="font-display text-2xl font-bold text-foreground mb-2">Admin Access</h1>
-            <p className="text-sm text-muted-foreground mb-6">Enter the admin password to continue.</p>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="relative">
-                <input type={showPassword ? "text" : "password"} className="w-full rounded-lg border border-input bg-background px-4 py-3 pr-10 font-sans text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <Button variant="warm" className="w-full" type="submit">Enter</Button>
-            </form>
+        <p className="text-muted-foreground">Loading...</p>
+      </main>
+    );
+  }
+
+  if (!session) {
+    navigate("/auth");
+    return null;
+  }
+
+  if (!isAdmin) {
+    return (
+      <main className="min-h-screen parchment-bg flex items-center justify-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-md w-full px-4 text-center">
+          <div className="rounded-lg border border-border bg-card p-8">
+            <h1 className="font-display text-2xl font-bold text-foreground mb-2">Not authorized</h1>
+            <p className="text-sm text-muted-foreground mb-6">
+              Your account ({session.user.email}) does not have admin access. Ask another admin to grant you the role.
+            </p>
+            <Button variant="warm" onClick={handleLogout}>Sign out</Button>
           </div>
         </motion.div>
       </main>
