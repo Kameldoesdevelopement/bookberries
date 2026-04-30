@@ -224,7 +224,7 @@ const Admin = () => {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <h3 className="font-sans text-sm font-semibold text-foreground">"{req.requested_title}" by {req.author || "Unknown"}</h3>
-                      <p className="font-sans text-xs text-muted-foreground mt-1">{req.name} · {req.email}</p>
+                      <p className="font-sans text-xs text-muted-foreground mt-1">{req.name} · {(req as any).phone || req.email}</p>
                       {req.message && <p className="font-sans text-xs text-muted-foreground mt-2 italic">"{req.message}"</p>}
                     </div>
                     {!req.resolved ? (
