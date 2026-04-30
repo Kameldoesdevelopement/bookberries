@@ -3,22 +3,23 @@ import { GENRES } from "@/data/books";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2, ShoppingBag, Library } from "lucide-react";
+import { Package, MessageSquare, Plus, Check, Trash2, ShoppingBag, Library, BookOpen } from "lucide-react";
 import ManageBooks from "@/components/admin/ManageBooks";
 import ManageAccessories from "@/components/admin/ManageAccessories";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
-
-const ADMIN_PASSWORD = "kutub2026";
+import { useNavigate } from "react-router-dom";
+import type { Session } from "@supabase/supabase-js";
 
 type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
 type BookRequest = Tables<"book_requests">;
 
 const Admin = () => {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books" | "manage-accessories">("orders");
   const queryClient = useQueryClient();
 
@@ -50,19 +51,48 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (authenticated) {
+    // Set up listener BEFORE getSession to avoid race
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+      if (!newSession) {
+        setIsAdmin(false);
+        setAuthChecked(true);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      if (!s) {
+        setIsAdmin(false);
+        setAuthChecked(true);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Check admin role whenever session changes
+  useEffect(() => {
+    if (!session) return;
+    (async () => {
+      // First-time bootstrap: if no admin exists yet, claim it
+      await supabase.rpc("claim_admin_if_first" as never);
+      const { data, error } = await supabase.rpc("is_current_user_admin" as never);
+      setIsAdmin(!error && data === true);
+      setAuthChecked(true);
+    })();
+  }, [session]);
+
+  useEffect(() => {
+    if (isAdmin) {
       fetchOrders();
       fetchRequests();
     }
-  }, [authenticated]);
+  }, [isAdmin]);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setAuthenticated(true);
-    } else {
-      toast.error("Incorrect password");
-    }
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
   };
 
   const markOrderCompleted = async (id: string) => {
@@ -129,23 +159,29 @@ const Admin = () => {
     queryClient.invalidateQueries({ queryKey: ["accessories"] });
   };
 
-  if (!authenticated) {
+  if (!authChecked) {
     return (
       <main className="min-h-screen parchment-bg flex items-center justify-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-sm w-full px-4">
-          <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <Lock className="mx-auto h-10 w-10 text-primary mb-4" />
-            <h1 className="font-display text-2xl font-bold text-foreground mb-2">Admin Access</h1>
-            <p className="text-sm text-muted-foreground mb-6">Enter the admin password to continue.</p>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="relative">
-                <input type={showPassword ? "text" : "password"} className="w-full rounded-lg border border-input bg-background px-4 py-3 pr-10 font-sans text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <Button variant="warm" className="w-full" type="submit">Enter</Button>
-            </form>
+        <p className="text-muted-foreground">Loading...</p>
+      </main>
+    );
+  }
+
+  if (!session) {
+    navigate("/auth");
+    return null;
+  }
+
+  if (!isAdmin) {
+    return (
+      <main className="min-h-screen parchment-bg flex items-center justify-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-md w-full px-4 text-center">
+          <div className="rounded-lg border border-border bg-card p-8">
+            <h1 className="font-display text-2xl font-bold text-foreground mb-2">Not authorized</h1>
+            <p className="text-sm text-muted-foreground mb-6">
+              Your account ({session.user.email}) does not have admin access. Ask another admin to grant you the role.
+            </p>
+            <Button variant="warm" onClick={handleLogout}>Sign out</Button>
           </div>
         </motion.div>
       </main>
@@ -160,7 +196,7 @@ const Admin = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="font-display text-3xl font-bold text-foreground">Dashboard</h1>
-          <Button variant="ghost" onClick={() => setAuthenticated(false)} className="font-sans text-sm">Logout</Button>
+          <Button variant="ghost" onClick={handleLogout} className="font-sans text-sm">Logout</Button>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-8">
