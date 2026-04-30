@@ -51,19 +51,51 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (authenticated) {
+    // Set up listener BEFORE getSession to avoid race
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+      if (!newSession) {
+        setIsAdmin(false);
+        setAuthChecked(true);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      if (!s) {
+        setIsAdmin(false);
+        setAuthChecked(true);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Check admin role whenever session changes
+  useEffect(() => {
+    if (!session) return;
+    (async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      setIsAdmin(!error && !!data);
+      setAuthChecked(true);
+    })();
+  }, [session]);
+
+  useEffect(() => {
+    if (isAdmin) {
       fetchOrders();
       fetchRequests();
     }
-  }, [authenticated]);
+  }, [isAdmin]);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setAuthenticated(true);
-    } else {
-      toast.error("Incorrect password");
-    }
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
   };
 
   const markOrderCompleted = async (id: string) => {
