@@ -16,9 +16,10 @@ type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
 type BookRequest = Tables<"book_requests">;
 
 const Admin = () => {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books" | "manage-accessories">("orders");
   const queryClient = useQueryClient();
 
