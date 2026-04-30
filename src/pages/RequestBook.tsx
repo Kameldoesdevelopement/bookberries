@@ -6,20 +6,21 @@ import { Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const RequestBook = () => {
-  const [form, setForm] = useState({ name: "", email: "", bookTitle: "", author: "", message: "" });
+  const [form, setForm] = useState({ name: "", phone: "", bookTitle: "", author: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.bookTitle) {
+    if (!form.name || !form.phone || !form.bookTitle) {
       toast.error("Please fill in all required fields.");
       return;
     }
     setLoading(true);
     const { error } = await supabase.from("book_requests").insert({
       name: form.name,
-      email: form.email,
+      phone: form.phone,
+      email: "",
       requested_title: form.bookTitle,
       author: form.author,
       message: form.message,
