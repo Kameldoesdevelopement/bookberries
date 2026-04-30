@@ -6,20 +6,21 @@ import { Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const RequestBook = () => {
-  const [form, setForm] = useState({ name: "", email: "", bookTitle: "", author: "", message: "" });
+  const [form, setForm] = useState({ name: "", phone: "", bookTitle: "", author: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.bookTitle) {
+    if (!form.name || !form.phone || !form.bookTitle) {
       toast.error("Please fill in all required fields.");
       return;
     }
     setLoading(true);
     const { error } = await supabase.from("book_requests").insert({
       name: form.name,
-      email: form.email,
+      phone: form.phone,
+      email: "",
       requested_title: form.bookTitle,
       author: form.author,
       message: form.message,
@@ -50,7 +51,7 @@ const RequestBook = () => {
               </div>
               <h2 className="font-display text-xl font-semibold text-foreground mb-2">Request Received</h2>
               <p className="text-sm text-muted-foreground">We'll review your request and do our best to source "{form.bookTitle}" for you.</p>
-              <Button variant="warm" className="mt-6" onClick={() => { setSubmitted(false); setForm({ name: "", email: "", bookTitle: "", author: "", message: "" }); }}>
+              <Button variant="warm" className="mt-6" onClick={() => { setSubmitted(false); setForm({ name: "", phone: "", bookTitle: "", author: "", message: "" }); }}>
                 Submit Another
               </Button>
             </motion.div>
@@ -61,8 +62,8 @@ const RequestBook = () => {
                 <input className={inputClass} placeholder="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div>
-                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Email *</label>
-                <input type="email" className={inputClass} placeholder="your@email.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Phone *</label>
+                <input type="tel" className={inputClass} placeholder="0xxxxxxxxx" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               </div>
               <div>
                 <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">Book Title *</label>
