@@ -3,14 +3,14 @@ import { GENRES } from "@/data/books";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Lock, Package, BookOpen, MessageSquare, Plus, Check, Eye, EyeOff, Trash2, ShoppingBag, Library } from "lucide-react";
+import { Package, MessageSquare, Plus, Check, Trash2, ShoppingBag, Library } from "lucide-react";
 import ManageBooks from "@/components/admin/ManageBooks";
 import ManageAccessories from "@/components/admin/ManageAccessories";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
-
-const ADMIN_PASSWORD = "kutub2026";
+import { useNavigate } from "react-router-dom";
+import type { Session } from "@supabase/supabase-js";
 
 type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
 type BookRequest = Tables<"book_requests">;
