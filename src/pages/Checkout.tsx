@@ -74,27 +74,28 @@ const Checkout = () => {
       deliveryInfo = `pickup - ${deskName}`;
     }
 
-    const { data: order, error: orderError } = await supabase
+    const orderId = crypto.randomUUID();
+    const { error: orderError } = await supabase
       .from("orders")
       .insert({
+        id: orderId,
         customer_name: form.name,
         phone: form.phone,
         wilaya: form.wilaya,
         delivery_type: deliveryInfo,
         total_price: grandTotal,
-      })
-      .select()
-      .single();
+      });
 
-    if (orderError || !order) {
-      toast.error("Failed to place order. Please try again.");
+    if (orderError) {
+      console.error("Order insert error:", orderError);
+      toast.error("Failed to place order: " + orderError.message);
       setLoading(false);
       return;
     }
 
     const { error: itemsError } = await supabase.from("order_items").insert(
       items.map((item) => ({
-        order_id: order.id,
+        order_id: orderId,
         book_id: item.book.id,
         title: item.book.title,
         quantity: item.quantity,
