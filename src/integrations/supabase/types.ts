@@ -48,30 +48,33 @@ export type Database = {
         Row: {
           author: string
           created_at: string
-          email: string
+          email: string | null
           id: string
           message: string
           name: string
+          phone: string
           requested_title: string
           resolved: boolean
         }
         Insert: {
           author?: string
           created_at?: string
-          email: string
+          email?: string | null
           id?: string
           message?: string
           name: string
+          phone?: string
           requested_title: string
           resolved?: boolean
         }
         Update: {
           author?: string
           created_at?: string
-          email?: string
+          email?: string | null
           id?: string
           message?: string
           name?: string
+          phone?: string
           requested_title?: string
           resolved?: boolean
         }
