@@ -75,8 +75,6 @@ const Admin = () => {
   useEffect(() => {
     if (!session) return;
     (async () => {
-      // First-time bootstrap: if no admin exists yet, claim it
-      await supabase.rpc("claim_admin_if_first" as never);
       const { data, error } = await supabase.rpc("is_current_user_admin" as never);
       setIsAdmin(!error && data === true);
       setAuthChecked(true);
