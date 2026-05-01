@@ -88,7 +88,7 @@ const Checkout = () => {
 
     if (orderError) {
       console.error("Order insert error:", orderError);
-      toast.error("Failed to place order: " + orderError.message);
+      toast.error("Failed to place order. Please try again.");
       setLoading(false);
       return;
     }
