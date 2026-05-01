@@ -88,6 +88,13 @@ const Admin = () => {
     }
   }, [isAdmin]);
 
+  // Redirect to /auth if no session, after auth check completes
+  useEffect(() => {
+    if (authChecked && !session) {
+      navigate("/auth");
+    }
+  }, [authChecked, session, navigate]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
@@ -166,8 +173,11 @@ const Admin = () => {
   }
 
   if (!session) {
-    navigate("/auth");
-    return null;
+    return (
+      <main className="min-h-screen parchment-bg flex items-center justify-center">
+        <p className="text-muted-foreground">Redirecting...</p>
+      </main>
+    );
   }
 
   if (!isAdmin) {
