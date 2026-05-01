@@ -173,8 +173,11 @@ const Admin = () => {
   }
 
   if (!session) {
-    navigate("/auth");
-    return null;
+    return (
+      <main className="min-h-screen parchment-bg flex items-center justify-center">
+        <p className="text-muted-foreground">Redirecting...</p>
+      </main>
+    );
   }
 
   if (!isAdmin) {
