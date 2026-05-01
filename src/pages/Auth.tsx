@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -27,28 +26,13 @@ const Auth = () => {
       return;
     }
     setLoading(true);
-    if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      setLoading(false);
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      navigate("/admin");
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: `${window.location.origin}/admin` },
-      });
-      setLoading(false);
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      toast.success("Account created. You can sign in now.");
-      setMode("signin");
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
     }
+    navigate("/admin", { replace: true });
   };
 
   const inputClass =
@@ -65,12 +49,10 @@ const Auth = () => {
           <div className="text-center mb-6">
             <Lock className="mx-auto h-10 w-10 text-primary mb-3" />
             <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-              {mode === "signin" ? "Admin Sign In" : "Create Admin Account"}
+              Admin Sign In
             </h1>
             <p className="text-sm text-muted-foreground">
-              {mode === "signin"
-                ? "Sign in to access the dashboard."
-                : "Create your admin account."}
+              Sign in to access the dashboard.
             </p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -85,7 +67,7 @@ const Auth = () => {
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                autoComplete="current-password"
                 className={inputClass + " pr-10"}
                 placeholder="Password"
                 value={password}
@@ -100,20 +82,9 @@ const Auth = () => {
               </button>
             </div>
             <Button variant="warm" className="w-full" type="submit" disabled={loading}>
-              {loading ? "Please wait..." : mode === "signin" ? "Sign In" : "Sign Up"}
+              {loading ? "Please wait..." : "Sign In"}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
-            >
-              {mode === "signin"
-                ? "Need an account? Sign up"
-                : "Already have an account? Sign in"}
-            </button>
-          </div>
         </div>
       </motion.div>
     </main>

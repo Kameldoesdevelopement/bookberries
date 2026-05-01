@@ -13,13 +13,13 @@ import { useNavigate } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
 
 type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
-type BookRequest = Tables<"book_requests">;
+type BookRequest = Tables<"book_requests"> & { phone?: string | null };
 
 const Admin = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [authStatus, setAuthStatus] = useState<"loading" | "signed-in" | "signed-out">("loading");
+  const [adminStatus, setAdminStatus] = useState<"idle" | "checking" | "admin" | "denied">("idle");
   const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books" | "manage-accessories">("orders");
   const queryClient = useQueryClient();
 
@@ -51,53 +51,62 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    // Set up listener BEFORE getSession to avoid race
+    let mounted = true;
+
+    const applySession = (nextSession: Session | null) => {
+      if (!mounted) return;
+      setSession(nextSession);
+      setAuthStatus(nextSession ? "signed-in" : "signed-out");
+      setAdminStatus(nextSession ? "checking" : "idle");
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      if (!newSession) {
-        setIsAdmin(false);
-        setAuthChecked(true);
-      }
+      applySession(newSession);
     });
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      if (!s) {
-        setIsAdmin(false);
-        setAuthChecked(true);
-      }
+      applySession(s);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Check admin role whenever session changes
   useEffect(() => {
-    if (!session) return;
+    if (authStatus !== "signed-in" || !session?.user?.id) return;
+    let cancelled = false;
+    setAdminStatus("checking");
+
     (async () => {
       const { data, error } = await supabase.rpc("is_current_user_admin" as never);
-      setIsAdmin(!error && data === true);
-      setAuthChecked(true);
+      if (!cancelled) {
+        setAdminStatus(!error && data === true ? "admin" : "denied");
+      }
     })();
-  }, [session]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authStatus, session?.user?.id]);
 
   useEffect(() => {
-    if (isAdmin) {
+    if (adminStatus === "admin") {
       fetchOrders();
       fetchRequests();
     }
-  }, [isAdmin]);
+  }, [adminStatus]);
 
-  // Redirect to /auth if no session, after auth check completes
   useEffect(() => {
-    if (authChecked && !session) {
-      navigate("/auth");
+    if (authStatus === "signed-out") {
+      navigate("/auth", { replace: true });
     }
-  }, [authChecked, session, navigate]);
+  }, [authStatus, navigate]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/auth");
+    navigate("/auth", { replace: true });
   };
 
   const markOrderCompleted = async (id: string) => {
@@ -164,7 +173,7 @@ const Admin = () => {
     queryClient.invalidateQueries({ queryKey: ["accessories"] });
   };
 
-  if (!authChecked) {
+  if (authStatus === "loading" || (authStatus === "signed-in" && adminStatus === "checking")) {
     return (
       <main className="min-h-screen parchment-bg flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
@@ -172,7 +181,7 @@ const Admin = () => {
     );
   }
 
-  if (!session) {
+  if (authStatus === "signed-out" || !session) {
     return (
       <main className="min-h-screen parchment-bg flex items-center justify-center">
         <p className="text-muted-foreground">Redirecting...</p>
@@ -180,7 +189,7 @@ const Admin = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (adminStatus === "denied") {
     return (
       <main className="min-h-screen parchment-bg flex items-center justify-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-md w-full px-4 text-center">
@@ -268,7 +277,7 @@ const Admin = () => {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <h3 className="font-sans text-sm font-semibold text-foreground">"{req.requested_title}" by {req.author || "Unknown"}</h3>
-                      <p className="font-sans text-xs text-muted-foreground mt-1">{req.name} · {(req as any).phone || req.email}</p>
+                      <p className="font-sans text-xs text-muted-foreground mt-1">{req.name} · {req.phone || req.email}</p>
                       {req.message && <p className="font-sans text-xs text-muted-foreground mt-2 italic">"{req.message}"</p>}
                     </div>
                     {!req.resolved ? (
