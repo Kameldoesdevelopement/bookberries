@@ -57,7 +57,9 @@ const Admin = () => {
       if (!mounted) return;
       setSession(nextSession);
       setAuthStatus(nextSession ? "signed-in" : "signed-out");
-      setAdminStatus(nextSession ? "checking" : "idle");
+      if (!nextSession) {
+        setAdminStatus("idle");
+      }
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
