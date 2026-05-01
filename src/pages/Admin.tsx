@@ -38,14 +38,22 @@ const Admin = () => {
 
   const fetchOrders = async () => {
     setLoadingOrders(true);
-    const { data } = await supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
+    if (error) {
+      console.error("fetchOrders error:", error);
+      toast.error(`Failed to load orders: ${error.message}`);
+    }
     setOrders((data as Order[]) || []);
     setLoadingOrders(false);
   };
 
   const fetchRequests = async () => {
     setLoadingRequests(true);
-    const { data } = await supabase.from("book_requests").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("book_requests").select("*").order("created_at", { ascending: false });
+    if (error) {
+      console.error("fetchRequests error:", error);
+      toast.error(`Failed to load requests: ${error.message}`);
+    }
     setRequests(data || []);
     setLoadingRequests(false);
   };
