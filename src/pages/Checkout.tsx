@@ -105,6 +105,7 @@ const Checkout = () => {
 
     setLoading(false);
     if (itemsError) {
+      console.error("Order items insert error:", itemsError);
       toast.error("Order placed but items may not have saved correctly.");
     }
 
