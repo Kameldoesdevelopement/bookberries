@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
 
 type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
-type BookRequest = Tables<"book_requests">;
+type BookRequest = Tables<"book_requests"> & { phone?: string | null };
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -277,7 +277,7 @@ const Admin = () => {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <h3 className="font-sans text-sm font-semibold text-foreground">"{req.requested_title}" by {req.author || "Unknown"}</h3>
-                      <p className="font-sans text-xs text-muted-foreground mt-1">{req.name} · {(req as any).phone || req.email}</p>
+                      <p className="font-sans text-xs text-muted-foreground mt-1">{req.name} · {req.phone || req.email}</p>
                       {req.message && <p className="font-sans text-xs text-muted-foreground mt-2 italic">"{req.message}"</p>}
                     </div>
                     {!req.resolved ? (
