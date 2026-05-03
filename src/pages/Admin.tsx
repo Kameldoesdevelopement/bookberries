@@ -38,12 +38,34 @@ const Admin = () => {
 
   const fetchOrders = async () => {
     setLoadingOrders(true);
-    const { data, error } = await supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
-    if (error) {
-      console.error("fetchOrders error:", error);
-      toast.error(`Failed to load orders: ${error.message}`);
+    const { data: orderData, error: orderError } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
+    if (orderError) {
+      console.error("fetchOrders orders error:", orderError);
+      toast.error(`Failed to load orders: ${orderError.message}`);
+      setOrders([]);
+      setLoadingOrders(false);
+      return;
     }
-    setOrders((data as Order[]) || []);
+
+    const orderIds = (orderData || []).map((order) => order.id);
+    const { data: itemData, error: itemError } = orderIds.length
+      ? await supabase.from("order_items").select("*").in("order_id", orderIds)
+      : { data: [], error: null };
+
+    if (itemError) {
+      console.error("fetchOrders items error:", itemError);
+      toast.error(`Failed to load order items: ${itemError.message}`);
+    }
+
+    const itemsByOrder = ((itemData as Tables<"order_items">[]) || []).reduce<Record<string, Tables<"order_items">[]>>((acc, item) => {
+      acc[item.order_id] = [...(acc[item.order_id] || []), item];
+      return acc;
+    }, {});
+
+    setOrders(((orderData || []) as Tables<"orders">[]).map((order) => ({
+      ...order,
+      order_items: itemsByOrder[order.id] || [],
+    })));
     setLoadingOrders(false);
   };
 
