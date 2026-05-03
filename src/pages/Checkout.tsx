@@ -74,39 +74,25 @@ const Checkout = () => {
       deliveryInfo = `pickup - ${deskName}`;
     }
 
-    const orderId = crypto.randomUUID();
-    const { error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        id: orderId,
+    const { data, error } = await supabase.functions.invoke("create-order", {
+      body: {
         customer_name: form.name,
         phone: form.phone,
         wilaya: form.wilaya,
         delivery_type: deliveryInfo,
-        total_price: grandTotal,
-      });
-
-    if (orderError) {
-      console.error("Order insert error:", orderError);
-      toast.error("Failed to place order. Please try again.");
-      setLoading(false);
-      return;
-    }
-
-    const { error: itemsError } = await supabase.from("order_items").insert(
-      items.map((item) => ({
-        order_id: orderId,
-        book_id: item.book.id,
-        title: item.book.title,
-        quantity: item.quantity,
-        price: item.book.price,
-      }))
-    );
+        delivery_mode: effectiveDeliveryType,
+        items: items.map((item) => ({
+          book_id: item.book.id,
+          quantity: item.quantity,
+        })),
+      },
+    });
 
     setLoading(false);
-    if (itemsError) {
-      console.error("Order items insert error:", itemsError);
-      toast.error("Order placed but items may not have saved correctly.");
+    if (error || (data as any)?.error) {
+      console.error("Order error:", error || (data as any)?.error);
+      toast.error("Failed to place order. Please try again.");
+      return;
     }
 
     setSuccess(true);
