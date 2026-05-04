@@ -74,24 +74,42 @@ const Checkout = () => {
       deliveryInfo = `pickup - ${deskName}`;
     }
 
-    const { data, error } = await supabase.functions.invoke("create-order", {
-      body: {
-        customer_name: form.name,
-        phone: form.phone,
-        wilaya: form.wilaya,
-        delivery_type: deliveryInfo,
-        delivery_mode: effectiveDeliveryType,
-        items: items.map((item) => ({
-          book_id: item.book.id,
-          quantity: item.quantity,
-        })),
-      },
-    });
+    const payload = {
+      customer_name: form.name,
+      phone: form.phone,
+      wilaya: form.wilaya,
+      delivery_type: deliveryInfo,
+      delivery_mode: effectiveDeliveryType,
+      items: items.map((item) => ({
+        book_id: item.book.id,
+        quantity: item.quantity,
+      })),
+    };
+
+    // Retry up to 3 times to survive cold-starts / transient network blips
+    let lastError: any = null;
+    let data: any = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const res = await supabase.functions.invoke("create-order", { body: payload });
+      if (!res.error && !(res.data as any)?.error) {
+        data = res.data;
+        lastError = null;
+        break;
+      }
+      lastError = res.error || (res.data as any)?.error;
+      console.error(`Order attempt ${attempt} failed:`, lastError);
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 800 * attempt));
+      }
+    }
 
     setLoading(false);
-    if (error || (data as any)?.error) {
-      console.error("Order error:", error || (data as any)?.error);
-      toast.error("Failed to place order. Please try again.");
+    if (lastError) {
+      const msg =
+        typeof lastError === "string"
+          ? lastError
+          : lastError?.message || "Network error";
+      toast.error(`Failed to place order: ${msg}. Your cart is saved — please try again.`);
       return;
     }
 
