@@ -159,8 +159,11 @@ const Checkout = () => {
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">
             Checkout
           </h1>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-muted-foreground mb-2">
             Cash on delivery — no payment needed now.
+          </p>
+          <p className="text-sm text-muted-foreground mb-8">
+            Delivery typically takes 7–14 days.
           </p>
 
           <div className="rounded-lg border border-border bg-card p-4 mb-8">
