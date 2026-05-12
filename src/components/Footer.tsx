@@ -27,7 +27,7 @@ const Footer = () => (
         <div>
           <h4 className="font-sans text-sm font-semibold text-foreground mb-3">Delivery</h4>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            We deliver across all 58 wilayas of Algeria. Cash on delivery available.
+            We deliver across all 58 wilayas of Algeria. Cash on delivery. Estimated delivery time: 7–14 days.
           </p>
         </div>
         <div>
