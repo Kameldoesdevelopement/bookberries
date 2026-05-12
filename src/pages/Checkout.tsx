@@ -133,9 +133,12 @@ const Checkout = () => {
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">
             Order Confirmed!
           </h1>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-2">
             Your order has been placed. We'll deliver it to {form.wilaya} soon.
             Cash on delivery.
+          </p>
+          <p className="text-sm text-muted-foreground mb-6">
+            Estimated delivery: 7–14 days.
           </p>
           <Button variant="warm" onClick={() => navigate("/shop")}>
             Continue Shopping
