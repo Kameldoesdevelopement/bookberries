@@ -181,8 +181,13 @@ const Checkout = () => {
                 <span className="font-sans text-sm text-foreground">
                   {item.book.title} × {item.quantity}
                 </span>
-                <span className="font-sans text-sm font-medium text-primary">
-                  {(item.book.price * item.quantity).toLocaleString()} DZD
+                <span className="font-sans text-sm font-medium text-primary flex items-center gap-2">
+                  {isOnPromotion(item.book) && (
+                    <span className="text-[10px] text-muted-foreground line-through">
+                      {(item.book.price * item.quantity).toLocaleString()}
+                    </span>
+                  )}
+                  {(getEffectivePrice(item.book) * item.quantity).toLocaleString()} DZD
                 </span>
               </div>
             ))}
