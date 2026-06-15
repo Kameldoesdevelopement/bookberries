@@ -208,7 +208,7 @@ Deno.serve(async (req) => {
         book_id: it.book_id,
         title: b.title,
         quantity: it.quantity,
-        price: b.price,
+        price: effectivePrice(b),
       };
     });
     const { error: itemsErr } = await supabase.from("order_items").insert(itemRows);
