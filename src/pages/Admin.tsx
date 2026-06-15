@@ -283,6 +283,12 @@ const Admin = () => {
                     <div>
                       <h3 className="font-sans text-sm font-semibold text-foreground">{order.customer_name}</h3>
                       <p className="font-sans text-xs text-muted-foreground">{order.phone} · {order.wilaya} · {order.delivery_type}</p>
+                      <p className="font-sans text-[11px] text-muted-foreground mt-1">
+                        {new Date(order.created_at).toLocaleString(undefined, {
+                          year: "numeric", month: "short", day: "numeric",
+                          hour: "2-digit", minute: "2-digit",
+                        })}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`font-sans text-xs font-medium px-2 py-1 rounded-full ${order.status === "pending" ? "bg-accent/20 text-accent-foreground" : "bg-secondary text-secondary-foreground"}`}>
@@ -304,6 +310,16 @@ const Admin = () => {
                     ))}
                     <span className="font-sans text-sm font-bold text-primary float-right">{order.total_price.toLocaleString()} DZD</span>
                   </div>
+                  {order.customer_notes && (
+                    <div className="mt-3 rounded-md border border-border bg-secondary/40 p-2.5">
+                      <p className="font-sans text-[11px] font-semibold text-muted-foreground mb-1">Customer note</p>
+                      <p className="font-sans text-xs text-foreground whitespace-pre-wrap">{order.customer_notes}</p>
+                    </div>
+                  )}
+                  <AdminNoteEditor
+                    initial={order.admin_notes ?? ""}
+                    onSave={(value) => saveAdminNotes(order.id, value)}
+                  />
                 </div>
               ))
             )}
