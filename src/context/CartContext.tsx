@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import type { Book } from "@/data/books";
+import { getEffectivePrice } from "@/data/books";
 
 interface CartItem {
   book: Book;
