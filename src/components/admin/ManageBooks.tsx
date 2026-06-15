@@ -49,6 +49,13 @@ const ManageBooks = () => {
 
   const saveEdit = async () => {
     if (!editingId) return;
+    const price = editData.price ?? 0;
+    const isPromo = !!editData.is_promotion;
+    const promoPrice = editData.promo_price ?? null;
+    if (isPromo && (!promoPrice || promoPrice <= 0 || promoPrice >= price)) {
+      toast.error("Promo price must be a positive number lower than the original price.");
+      return;
+    }
     const { error } = await supabase.from("books").update({
       title: editData.title,
       author: editData.author,
@@ -57,6 +64,8 @@ const ManageBooks = () => {
       genre: editData.genre,
       is_trending: editData.is_trending,
       image_url: editData.image_url,
+      is_promotion: isPromo,
+      promo_price: isPromo ? promoPrice : null,
     }).eq("id", editingId);
     if (error) { toast.error("Failed to update"); return; }
     setBooks(books.map((b) => b.id === editingId ? { ...b, ...editData } : b));
