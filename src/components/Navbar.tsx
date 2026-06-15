@@ -9,6 +9,7 @@ import logo from "@/assets/bookberries-logo.png";
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Shop" },
+  { to: "/promotions", label: "Promotions" },
   { to: "/request", label: "Request a Book" },
   { to: "/contact", label: "Contact" },
 ];

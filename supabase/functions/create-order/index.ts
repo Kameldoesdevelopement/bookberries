@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
     const bookIds = [...new Set(body.items.map((i) => i.book_id))];
     const { data: books, error: booksErr } = await supabase
       .from("books")
-      .select("id, title, price")
+      .select("id, title, price, is_promotion, promo_price")
       .in("id", bookIds);
 
     if (booksErr) {
@@ -164,6 +164,11 @@ Deno.serve(async (req) => {
       });
     }
 
+    const effectivePrice = (b: { price: number; is_promotion: boolean | null; promo_price: number | null }) =>
+      b.is_promotion && typeof b.promo_price === "number" && b.promo_price > 0 && b.promo_price < b.price
+        ? b.promo_price
+        : b.price;
+
     const bookMap = new Map(books?.map((b) => [b.id, b]) ?? []);
     for (const it of body.items) {
       if (!bookMap.has(it.book_id)) return badRequest("Unknown book in cart");
@@ -173,7 +178,7 @@ Deno.serve(async (req) => {
       body.delivery_mode === "home" ? pricing.home : pricing.desk;
     const itemsTotal = body.items.reduce((sum, it) => {
       const b = bookMap.get(it.book_id)!;
-      return sum + b.price * it.quantity;
+      return sum + effectivePrice(b) * it.quantity;
     }, 0);
     const totalPrice = itemsTotal + deliveryFee;
 
@@ -203,7 +208,7 @@ Deno.serve(async (req) => {
         book_id: it.book_id,
         title: b.title,
         quantity: it.quantity,
-        price: b.price,
+        price: effectivePrice(b),
       };
     });
     const { error: itemsErr } = await supabase.from("order_items").insert(itemRows);

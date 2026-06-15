@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Book } from "@/data/books";
+import { isOnPromotion } from "@/data/books";
 import { motion } from "framer-motion";
 
 interface BookCardProps {
@@ -16,6 +17,11 @@ const BookCard = ({ book }: BookCardProps) => (
     <Link to={`/book/${book.id}`} className="book-card block group">
       {/* Cover */}
       <div className="aspect-[2/3] relative overflow-hidden">
+        {isOnPromotion(book) && (
+          <span className="absolute top-2 left-2 z-10 rounded-full bg-accent text-accent-foreground font-sans text-[10px] font-bold px-2 py-1 shadow">
+            SALE
+          </span>
+        )}
         {book.image_url ? (
           <img src={book.image_url} alt={book.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
         ) : (
@@ -42,10 +48,17 @@ const BookCard = ({ book }: BookCardProps) => (
           {book.title}
         </h3>
         <p className="font-sans text-xs text-muted-foreground mb-2">{book.author}</p>
-        <div className="flex items-center justify-between">
-          <span className="font-sans text-sm font-bold text-primary">
-            {book.price.toLocaleString()} DZD
-          </span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-sans text-sm font-bold text-primary">
+              {(isOnPromotion(book) ? (book.promo_price as number) : book.price).toLocaleString()} DZD
+            </span>
+            {isOnPromotion(book) && (
+              <span className="font-sans text-[10px] text-muted-foreground line-through">
+                {book.price.toLocaleString()}
+              </span>
+            )}
+          </div>
           <div className="flex gap-1">
             {book.genre.slice(0, 2).map((g) => (
               <span key={g} className="genre-tag text-[10px] px-2 py-0.5">{g}</span>

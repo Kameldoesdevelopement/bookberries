@@ -49,6 +49,13 @@ const ManageBooks = () => {
 
   const saveEdit = async () => {
     if (!editingId) return;
+    const price = editData.price ?? 0;
+    const isPromo = !!editData.is_promotion;
+    const promoPrice = editData.promo_price ?? null;
+    if (isPromo && (!promoPrice || promoPrice <= 0 || promoPrice >= price)) {
+      toast.error("Promo price must be a positive number lower than the original price.");
+      return;
+    }
     const { error } = await supabase.from("books").update({
       title: editData.title,
       author: editData.author,
@@ -57,6 +64,8 @@ const ManageBooks = () => {
       genre: editData.genre,
       is_trending: editData.is_trending,
       image_url: editData.image_url,
+      is_promotion: isPromo,
+      promo_price: isPromo ? promoPrice : null,
     }).eq("id", editingId);
     if (error) { toast.error("Failed to update"); return; }
     setBooks(books.map((b) => b.id === editingId ? { ...b, ...editData } : b));
@@ -123,6 +132,39 @@ const ManageBooks = () => {
                 <input type="checkbox" checked={editData.is_trending || false} onChange={(e) => setEditData({ ...editData, is_trending: e.target.checked })} className="accent-primary" />
                 Trending
               </label>
+              <div className="rounded-md border border-border bg-secondary/30 p-3 space-y-2">
+                <label className="flex items-center gap-2 font-sans text-xs font-medium text-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editData.is_promotion || false}
+                    onChange={(e) => setEditData({
+                      ...editData,
+                      is_promotion: e.target.checked,
+                      promo_price: e.target.checked ? editData.promo_price ?? null : null,
+                    })}
+                    className="accent-primary"
+                  />
+                  On promotion
+                </label>
+                {editData.is_promotion && (
+                  <div>
+                    <label className="mb-1 block font-sans text-xs font-medium text-muted-foreground">
+                      Promo price (DZD)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      className={inputClass}
+                      placeholder="New (lower) price"
+                      value={editData.promo_price ?? ""}
+                      onChange={(e) => setEditData({
+                        ...editData,
+                        promo_price: e.target.value ? parseInt(e.target.value) : null,
+                      })}
+                    />
+                  </div>
+                )}
+              </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="warm" onClick={saveEdit}><Save className="h-3 w-3 mr-1" />Save</Button>
                 <Button size="sm" variant="ghost" onClick={cancelEdit}><X className="h-3 w-3 mr-1" />Cancel</Button>
@@ -145,6 +187,11 @@ const ManageBooks = () => {
                     <span key={g} className="font-sans text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">{g}</span>
                   ))}
                   {book.is_trending && <span className="font-sans text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">Trending</span>}
+                  {book.is_promotion && book.promo_price && (
+                    <span className="font-sans text-[10px] px-1.5 py-0.5 rounded bg-accent/20 text-accent-foreground">
+                      SALE {book.promo_price} DZD
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex gap-1 flex-shrink-0">

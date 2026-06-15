@@ -6,6 +6,7 @@ import { ArrowLeft, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import BookCard from "@/components/BookCard";
+import { getEffectivePrice, isOnPromotion } from "@/data/books";
 
 const BookDetails = () => {
   const { id } = useParams();
@@ -72,8 +73,18 @@ const BookDetails = () => {
               {book.genre.map((g) => (<Link key={g} to={`/shop?genre=${g}`} className="genre-tag">{g}</Link>))}
             </div>
             <p className="mt-6 text-foreground/80 leading-relaxed">{book.description}</p>
-            <div className="mt-8 flex items-center gap-6">
-              <span className="font-display text-3xl font-bold text-primary">{book.price.toLocaleString()} DZD</span>
+            <div className="mt-8 flex items-center gap-6 flex-wrap">
+              <div className="flex items-baseline gap-3">
+                <span className="font-display text-3xl font-bold text-primary">{getEffectivePrice(book).toLocaleString()} DZD</span>
+                {isOnPromotion(book) && (
+                  <>
+                    <span className="font-sans text-lg text-muted-foreground line-through">{book.price.toLocaleString()} DZD</span>
+                    <span className="rounded-full bg-accent text-accent-foreground font-sans text-xs font-bold px-2 py-1">
+                      -{Math.round(((book.price - (book.promo_price as number)) / book.price) * 100)}%
+                    </span>
+                  </>
+                )}
+              </div>
               <Button variant="warm" size="lg" onClick={handleAdd} className="gap-2">
                 <ShoppingCart className="h-4 w-4" />Add to Cart
               </Button>

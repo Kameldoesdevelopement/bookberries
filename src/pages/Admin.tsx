@@ -54,6 +54,7 @@ const Admin = () => {
 
   const [newBook, setNewBook] = useState({
     title: "", author: "", price: "", description: "", genre: [] as string[], isTrending: false, imageUrl: "",
+    isPromotion: false, promoPrice: "",
   });
 
   const [newAccessory, setNewAccessory] = useState({
@@ -202,21 +203,29 @@ const Admin = () => {
       toast.error("Fill in required fields.");
       return;
     }
+    const price = parseInt(newBook.price);
+    const promoPrice = newBook.isPromotion ? parseInt(newBook.promoPrice) : NaN;
+    if (newBook.isPromotion && (!Number.isFinite(promoPrice) || promoPrice <= 0 || promoPrice >= price)) {
+      toast.error("Promo price must be a positive number lower than the original price.");
+      return;
+    }
     const { error } = await supabase.from("books").insert({
       title: newBook.title,
       author: newBook.author,
-      price: parseInt(newBook.price),
+      price,
       description: newBook.description,
       genre: newBook.genre,
       is_trending: newBook.isTrending,
       image_url: newBook.imageUrl,
+      is_promotion: newBook.isPromotion,
+      promo_price: newBook.isPromotion ? promoPrice : null,
     });
     if (error) {
       toast.error("Failed to add book.");
       return;
     }
     toast.success(`"${newBook.title}" added to the catalog!`);
-    setNewBook({ title: "", author: "", price: "", description: "", genre: [], isTrending: false, imageUrl: "" });
+    setNewBook({ title: "", author: "", price: "", description: "", genre: [], isTrending: false, imageUrl: "", isPromotion: false, promoPrice: "" });
     queryClient.invalidateQueries({ queryKey: ["books"] });
   };
 
@@ -422,6 +431,32 @@ const Admin = () => {
                 <input type="checkbox" checked={newBook.isTrending} onChange={(e) => setNewBook({ ...newBook, isTrending: e.target.checked })} className="accent-primary" />
                 Mark as trending
               </label>
+              <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-3">
+                <label className="flex items-center gap-2 font-sans text-sm font-medium text-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newBook.isPromotion}
+                    onChange={(e) => setNewBook({ ...newBook, isPromotion: e.target.checked, promoPrice: e.target.checked ? newBook.promoPrice : "" })}
+                    className="accent-primary"
+                  />
+                  On promotion
+                </label>
+                {newBook.isPromotion && (
+                  <div>
+                    <label className="mb-1.5 block font-sans text-xs font-medium text-muted-foreground">
+                      New price (DZD) — must be lower than {newBook.price || "original price"}
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      className={inputClass}
+                      placeholder="e.g. 1200"
+                      value={newBook.promoPrice}
+                      onChange={(e) => setNewBook({ ...newBook, promoPrice: e.target.value })}
+                    />
+                  </div>
+                )}
+              </div>
               <Button variant="warm" size="lg" type="submit" className="w-full gap-2">
                 <BookOpen className="h-4 w-4" />Add to Catalog
               </Button>
