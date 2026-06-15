@@ -6,6 +6,7 @@ import { ArrowLeft, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import BookCard from "@/components/BookCard";
+import { getEffectivePrice, isOnPromotion } from "@/data/books";
 
 const BookDetails = () => {
   const { id } = useParams();
