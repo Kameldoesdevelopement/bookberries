@@ -2,6 +2,12 @@ import type { Tables } from "@/integrations/supabase/types";
 
 export type Book = Tables<"books">;
 
+export const isOnPromotion = (book: Pick<Book, "is_promotion" | "promo_price" | "price">) =>
+  !!book.is_promotion && typeof book.promo_price === "number" && book.promo_price > 0 && book.promo_price < book.price;
+
+export const getEffectivePrice = (book: Pick<Book, "is_promotion" | "promo_price" | "price">) =>
+  isOnPromotion(book) ? (book.promo_price as number) : book.price;
+
 export const GENRES = [
   "Literary Fiction & Classics",
   "Romance",
