@@ -90,8 +90,10 @@ export type Database = {
           genre: string[]
           id: string
           image_url: string | null
+          is_promotion: boolean
           is_trending: boolean
           price: number
+          promo_price: number | null
           title: string
         }
         Insert: {
@@ -103,8 +105,10 @@ export type Database = {
           genre?: string[]
           id?: string
           image_url?: string | null
+          is_promotion?: boolean
           is_trending?: boolean
           price: number
+          promo_price?: number | null
           title: string
         }
         Update: {
@@ -116,8 +120,10 @@ export type Database = {
           genre?: string[]
           id?: string
           image_url?: string | null
+          is_promotion?: boolean
           is_trending?: boolean
           price?: number
+          promo_price?: number | null
           title?: string
         }
         Relationships: []
