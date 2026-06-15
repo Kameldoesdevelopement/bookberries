@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getEffectivePrice, isOnPromotion } from "@/data/books";
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
