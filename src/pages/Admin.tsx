@@ -431,6 +431,32 @@ const Admin = () => {
                 <input type="checkbox" checked={newBook.isTrending} onChange={(e) => setNewBook({ ...newBook, isTrending: e.target.checked })} className="accent-primary" />
                 Mark as trending
               </label>
+              <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-3">
+                <label className="flex items-center gap-2 font-sans text-sm font-medium text-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newBook.isPromotion}
+                    onChange={(e) => setNewBook({ ...newBook, isPromotion: e.target.checked, promoPrice: e.target.checked ? newBook.promoPrice : "" })}
+                    className="accent-primary"
+                  />
+                  On promotion
+                </label>
+                {newBook.isPromotion && (
+                  <div>
+                    <label className="mb-1.5 block font-sans text-xs font-medium text-muted-foreground">
+                      New price (DZD) — must be lower than {newBook.price || "original price"}
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      className={inputClass}
+                      placeholder="e.g. 1200"
+                      value={newBook.promoPrice}
+                      onChange={(e) => setNewBook({ ...newBook, promoPrice: e.target.value })}
+                    />
+                  </div>
+                )}
+              </div>
               <Button variant="warm" size="lg" type="submit" className="w-full gap-2">
                 <BookOpen className="h-4 w-4" />Add to Catalog
               </Button>
