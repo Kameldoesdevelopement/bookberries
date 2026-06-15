@@ -186,6 +186,7 @@ Deno.serve(async (req) => {
       delivery_type: deliveryDesc,
       total_price: totalPrice,
       status: "pending",
+      customer_notes: customerNotes,
     });
     if (orderErr) {
       console.error("order insert error", orderErr);
