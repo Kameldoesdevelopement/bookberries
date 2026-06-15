@@ -54,6 +54,7 @@ const Admin = () => {
 
   const [newBook, setNewBook] = useState({
     title: "", author: "", price: "", description: "", genre: [] as string[], isTrending: false, imageUrl: "",
+    isPromotion: false, promoPrice: "",
   });
 
   const [newAccessory, setNewAccessory] = useState({
