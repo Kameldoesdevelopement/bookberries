@@ -15,6 +15,30 @@ import type { Session } from "@supabase/supabase-js";
 type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
 type BookRequest = Tables<"book_requests"> & { phone?: string | null };
 
+const AdminNoteEditor = ({ initial, onSave }: { initial: string; onSave: (v: string) => void | Promise<void> }) => {
+  const [value, setValue] = useState(initial);
+  useEffect(() => { setValue(initial); }, [initial]);
+  const dirty = value !== initial;
+  return (
+    <div className="mt-3">
+      <label className="block font-sans text-[11px] font-semibold text-muted-foreground mb-1">Admin note (private)</label>
+      <textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        rows={2}
+        placeholder="Internal note for this order..."
+        className="w-full rounded-md border border-input bg-background px-3 py-2 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+      />
+      {dirty && (
+        <div className="flex justify-end gap-2 mt-1.5">
+          <Button size="sm" variant="ghost" onClick={() => setValue(initial)}>Cancel</Button>
+          <Button size="sm" variant="warm" onClick={() => onSave(value.trim())}>Save note</Button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Admin = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
