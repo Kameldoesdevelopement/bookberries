@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Book } from "@/data/books";
+import { isOnPromotion } from "@/data/books";
 import { motion } from "framer-motion";
 
 interface BookCardProps {
