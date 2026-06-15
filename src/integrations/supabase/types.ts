@@ -166,8 +166,10 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_notes: string | null
           created_at: string
           customer_name: string
+          customer_notes: string | null
           delivery_type: string
           id: string
           phone: string
@@ -176,8 +178,10 @@ export type Database = {
           wilaya: string
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           customer_name: string
+          customer_notes?: string | null
           delivery_type?: string
           id?: string
           phone: string
@@ -186,8 +190,10 @@ export type Database = {
           wilaya: string
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           customer_name?: string
+          customer_notes?: string | null
           delivery_type?: string
           id?: string
           phone?: string
