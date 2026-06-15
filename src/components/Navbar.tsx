@@ -99,20 +99,23 @@ const Navbar = () => {
           <img src={logo} alt="Bookberries logo" className="h-8 w-auto" />
         </Link>
 
-        <div ref={searchRef} className="flex-1 mx-2 relative">
+        <div ref={searchRef} className="flex-1 mx-1 relative min-w-0">
           <form onSubmit={handleMobileSearch}>
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               <input
-                type="text"
-                placeholder="Find the book you're looking for"
+                type="search"
+                inputMode="search"
+                enterKeyHint="search"
+                autoComplete="off"
+                placeholder="Search books..."
                 value={mobileSearch}
                 onChange={(e) => {
                   setMobileSearch(e.target.value);
                   setShowSuggestions(true);
                 }}
                 onFocus={() => setShowSuggestions(true)}
-                className="w-full rounded-full border border-input bg-secondary/50 py-1.5 pl-8 pr-3 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full rounded-full border border-input bg-secondary/60 py-2 pl-9 pr-3 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring [&::-webkit-search-cancel-button]:appearance-none"
               />
             </div>
           </form>
@@ -122,13 +125,21 @@ const Navbar = () => {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                className="absolute left-0 right-0 top-full mt-1 rounded-lg border border-border bg-card shadow-lg z-50 overflow-hidden"
+                className="absolute left-0 right-0 top-full mt-1 rounded-lg border border-border bg-card shadow-lg z-[60] overflow-hidden max-h-[60vh] overflow-y-auto"
               >
                 {suggestions.map((book) => (
                   <button
                     key={book.id}
-                    onClick={() => handleSuggestionClick(book.id)}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 text-left hover:bg-secondary/60 transition-colors"
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSuggestionClick(book.id);
+                    }}
+                    onTouchStart={(e) => {
+                      e.preventDefault();
+                      handleSuggestionClick(book.id);
+                    }}
+                    className="flex items-center gap-3 w-full px-3 py-2.5 text-left hover:bg-secondary/60 active:bg-secondary transition-colors"
                   >
                     {book.image_url ? (
                       <img src={book.image_url} alt="" className="h-10 w-7 object-cover rounded-sm flex-shrink-0" />
