@@ -81,6 +81,7 @@ const Checkout = () => {
       wilaya: form.wilaya,
       delivery_type: deliveryInfo,
       delivery_mode: effectiveDeliveryType,
+      customer_notes: form.notes.trim() || undefined,
       items: items.map((item) => ({
         book_id: item.book.id,
         quantity: item.quantity,
