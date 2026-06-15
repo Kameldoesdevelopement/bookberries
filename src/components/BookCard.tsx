@@ -17,6 +17,11 @@ const BookCard = ({ book }: BookCardProps) => (
     <Link to={`/book/${book.id}`} className="book-card block group">
       {/* Cover */}
       <div className="aspect-[2/3] relative overflow-hidden">
+        {isOnPromotion(book) && (
+          <span className="absolute top-2 left-2 z-10 rounded-full bg-accent text-accent-foreground font-sans text-[10px] font-bold px-2 py-1 shadow">
+            SALE
+          </span>
+        )}
         {book.image_url ? (
           <img src={book.image_url} alt={book.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
         ) : (
