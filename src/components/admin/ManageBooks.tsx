@@ -132,6 +132,39 @@ const ManageBooks = () => {
                 <input type="checkbox" checked={editData.is_trending || false} onChange={(e) => setEditData({ ...editData, is_trending: e.target.checked })} className="accent-primary" />
                 Trending
               </label>
+              <div className="rounded-md border border-border bg-secondary/30 p-3 space-y-2">
+                <label className="flex items-center gap-2 font-sans text-xs font-medium text-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editData.is_promotion || false}
+                    onChange={(e) => setEditData({
+                      ...editData,
+                      is_promotion: e.target.checked,
+                      promo_price: e.target.checked ? editData.promo_price ?? null : null,
+                    })}
+                    className="accent-primary"
+                  />
+                  On promotion
+                </label>
+                {editData.is_promotion && (
+                  <div>
+                    <label className="mb-1 block font-sans text-xs font-medium text-muted-foreground">
+                      Promo price (DZD)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      className={inputClass}
+                      placeholder="New (lower) price"
+                      value={editData.promo_price ?? ""}
+                      onChange={(e) => setEditData({
+                        ...editData,
+                        promo_price: e.target.value ? parseInt(e.target.value) : null,
+                      })}
+                    />
+                  </div>
+                )}
+              </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="warm" onClick={saveEdit}><Save className="h-3 w-3 mr-1" />Save</Button>
                 <Button size="sm" variant="ghost" onClick={cancelEdit}><X className="h-3 w-3 mr-1" />Cancel</Button>
