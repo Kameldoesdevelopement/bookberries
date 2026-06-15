@@ -60,9 +60,16 @@ const Cart = () => {
                       </button>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="font-sans text-sm font-bold text-primary">
-                        {(item.book.price * item.quantity).toLocaleString()} DZD
-                      </span>
+                      <div className="flex flex-col items-end">
+                        <span className="font-sans text-sm font-bold text-primary">
+                          {(getEffectivePrice(item.book) * item.quantity).toLocaleString()} DZD
+                        </span>
+                        {isOnPromotion(item.book) && (
+                          <span className="font-sans text-[10px] text-muted-foreground line-through">
+                            {(item.book.price * item.quantity).toLocaleString()} DZD
+                          </span>
+                        )}
+                      </div>
                       <button onClick={() => removeFromCart(item.book.id)} className="text-muted-foreground hover:text-destructive transition-colors">
                         <Trash2 className="h-4 w-4" />
                       </button>
