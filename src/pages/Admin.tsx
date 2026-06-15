@@ -203,21 +203,29 @@ const Admin = () => {
       toast.error("Fill in required fields.");
       return;
     }
+    const price = parseInt(newBook.price);
+    const promoPrice = newBook.isPromotion ? parseInt(newBook.promoPrice) : NaN;
+    if (newBook.isPromotion && (!Number.isFinite(promoPrice) || promoPrice <= 0 || promoPrice >= price)) {
+      toast.error("Promo price must be a positive number lower than the original price.");
+      return;
+    }
     const { error } = await supabase.from("books").insert({
       title: newBook.title,
       author: newBook.author,
-      price: parseInt(newBook.price),
+      price,
       description: newBook.description,
       genre: newBook.genre,
       is_trending: newBook.isTrending,
       image_url: newBook.imageUrl,
+      is_promotion: newBook.isPromotion,
+      promo_price: newBook.isPromotion ? promoPrice : null,
     });
     if (error) {
       toast.error("Failed to add book.");
       return;
     }
     toast.success(`"${newBook.title}" added to the catalog!`);
-    setNewBook({ title: "", author: "", price: "", description: "", genre: [], isTrending: false, imageUrl: "" });
+    setNewBook({ title: "", author: "", price: "", description: "", genre: [], isTrending: false, imageUrl: "", isPromotion: false, promoPrice: "" });
     queryClient.invalidateQueries({ queryKey: ["books"] });
   };
 
