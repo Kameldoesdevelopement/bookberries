@@ -19,6 +19,7 @@ const Checkout = () => {
     deliveryType: "home" as "home" | "pickup",
     address: "",
     desk: "",
+    notes: "",
   });
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
