@@ -187,6 +187,11 @@ const ManageBooks = () => {
                     <span key={g} className="font-sans text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">{g}</span>
                   ))}
                   {book.is_trending && <span className="font-sans text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">Trending</span>}
+                  {book.is_promotion && book.promo_price && (
+                    <span className="font-sans text-[10px] px-1.5 py-0.5 rounded bg-accent/20 text-accent-foreground">
+                      SALE {book.promo_price} DZD
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex gap-1 flex-shrink-0">
