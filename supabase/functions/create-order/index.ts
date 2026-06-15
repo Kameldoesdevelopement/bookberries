@@ -84,6 +84,7 @@ interface OrderRequest {
   delivery_type: string; // free-form description e.g. "home - <address>" or "pickup - <desk>"
   delivery_mode: "home" | "pickup";
   items: OrderItemInput[];
+  customer_notes?: string;
 }
 
 function badRequest(msg: string) {
