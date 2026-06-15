@@ -84,6 +84,7 @@ interface OrderRequest {
   delivery_type: string; // free-form description e.g. "home - <address>" or "pickup - <desk>"
   delivery_mode: "home" | "pickup";
   items: OrderItemInput[];
+  customer_notes?: string;
 }
 
 function badRequest(msg: string) {
@@ -119,6 +120,9 @@ Deno.serve(async (req) => {
     const phone = body.phone.trim();
     const wilaya = body.wilaya.trim();
     const deliveryDesc = body.delivery_type.trim().slice(0, 250);
+    const customerNotes = typeof body.customer_notes === "string"
+      ? body.customer_notes.trim().slice(0, 1000) || null
+      : null;
 
     if (name.length < 2 || name.length > 120) return badRequest("Invalid name");
     if (phone.length < 6 || phone.length > 30) return badRequest("Invalid phone");
@@ -182,6 +186,7 @@ Deno.serve(async (req) => {
       delivery_type: deliveryDesc,
       total_price: totalPrice,
       status: "pending",
+      customer_notes: customerNotes,
     });
     if (orderErr) {
       console.error("order insert error", orderErr);

@@ -1,0 +1,1 @@
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS customer_notes TEXT, ADD COLUMN IF NOT EXISTS admin_notes TEXT;

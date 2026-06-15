@@ -15,6 +15,30 @@ import type { Session } from "@supabase/supabase-js";
 type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
 type BookRequest = Tables<"book_requests"> & { phone?: string | null };
 
+const AdminNoteEditor = ({ initial, onSave }: { initial: string; onSave: (v: string) => void | Promise<void> }) => {
+  const [value, setValue] = useState(initial);
+  useEffect(() => { setValue(initial); }, [initial]);
+  const dirty = value !== initial;
+  return (
+    <div className="mt-3">
+      <label className="block font-sans text-[11px] font-semibold text-muted-foreground mb-1">Admin note (private)</label>
+      <textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        rows={2}
+        placeholder="Internal note for this order..."
+        className="w-full rounded-md border border-input bg-background px-3 py-2 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+      />
+      {dirty && (
+        <div className="flex justify-end gap-2 mt-1.5">
+          <Button size="sm" variant="ghost" onClick={() => setValue(initial)}>Cancel</Button>
+          <Button size="sm" variant="warm" onClick={() => onSave(value.trim())}>Save note</Button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Admin = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
@@ -153,6 +177,19 @@ const Admin = () => {
     toast.success("Order deleted");
   };
 
+  const saveAdminNotes = async (id: string, notes: string) => {
+    const { error } = await supabase
+      .from("orders")
+      .update({ admin_notes: notes })
+      .eq("id", id);
+    if (error) {
+      toast.error("Failed to save note");
+      return;
+    }
+    setOrders(orders.map((o) => (o.id === id ? { ...o, admin_notes: notes } : o)));
+    toast.success("Note saved");
+  };
+
   const resolveRequest = async (id: string) => {
     await supabase.from("book_requests").update({ resolved: true }).eq("id", id);
     setRequests(requests.map((r) => r.id === id ? { ...r, resolved: true } : r));
@@ -270,6 +307,12 @@ const Admin = () => {
                     <div>
                       <h3 className="font-sans text-sm font-semibold text-foreground">{order.customer_name}</h3>
                       <p className="font-sans text-xs text-muted-foreground">{order.phone} · {order.wilaya} · {order.delivery_type}</p>
+                      <p className="font-sans text-[11px] text-muted-foreground mt-1">
+                        {new Date(order.created_at).toLocaleString(undefined, {
+                          year: "numeric", month: "short", day: "numeric",
+                          hour: "2-digit", minute: "2-digit",
+                        })}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`font-sans text-xs font-medium px-2 py-1 rounded-full ${order.status === "pending" ? "bg-accent/20 text-accent-foreground" : "bg-secondary text-secondary-foreground"}`}>
@@ -291,6 +334,16 @@ const Admin = () => {
                     ))}
                     <span className="font-sans text-sm font-bold text-primary float-right">{order.total_price.toLocaleString()} DZD</span>
                   </div>
+                  {order.customer_notes && (
+                    <div className="mt-3 rounded-md border border-border bg-secondary/40 p-2.5">
+                      <p className="font-sans text-[11px] font-semibold text-muted-foreground mb-1">Customer note</p>
+                      <p className="font-sans text-xs text-foreground whitespace-pre-wrap">{order.customer_notes}</p>
+                    </div>
+                  )}
+                  <AdminNoteEditor
+                    initial={order.admin_notes ?? ""}
+                    onSave={(value) => saveAdminNotes(order.id, value)}
+                  />
                 </div>
               ))
             )}
