@@ -153,6 +153,19 @@ const Admin = () => {
     toast.success("Order deleted");
   };
 
+  const saveAdminNotes = async (id: string, notes: string) => {
+    const { error } = await supabase
+      .from("orders")
+      .update({ admin_notes: notes })
+      .eq("id", id);
+    if (error) {
+      toast.error("Failed to save note");
+      return;
+    }
+    setOrders(orders.map((o) => (o.id === id ? { ...o, admin_notes: notes } : o)));
+    toast.success("Note saved");
+  };
+
   const resolveRequest = async (id: string) => {
     await supabase.from("book_requests").update({ resolved: true }).eq("id", id);
     setRequests(requests.map((r) => r.id === id ? { ...r, resolved: true } : r));
