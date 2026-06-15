@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
+import Promotions from "./pages/Promotions";
 import BookDetails from "./pages/BookDetails";
 import AccessoryDetails from "./pages/AccessoryDetails";
 import RequestBook from "./pages/RequestBook";
@@ -33,6 +34,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/shop" element={<Shop />} />
+                <Route path="/promotions" element={<Promotions />} />
                 <Route path="/book/:id" element={<BookDetails />} />
                 <Route path="/accessory/:id" element={<AccessoryDetails />} />
                 <Route path="/request" element={<RequestBook />} />
