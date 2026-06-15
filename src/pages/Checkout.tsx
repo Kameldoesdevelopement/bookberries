@@ -345,6 +345,20 @@ const Checkout = () => {
               </motion.div>
             )}
 
+            <div>
+              <label className="mb-1.5 block font-sans text-sm font-medium text-foreground">
+                Order Notes (optional)
+              </label>
+              <textarea
+                className={inputClass + " resize-none"}
+                rows={3}
+                placeholder="Anything we should know? Preferred delivery time, gift wrap, special instructions..."
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                maxLength={1000}
+              />
+            </div>
+
             <Button
               variant="warm"
               size="lg"
