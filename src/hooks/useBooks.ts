@@ -35,3 +35,19 @@ export const useTrendingBooks = () => {
     },
   });
 };
+
+export const usePromotionBooks = () => {
+  return useQuery<Book[]>({
+    queryKey: ["books", "promotions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("books")
+        .select("*")
+        .eq("is_promotion", true)
+        .not("promo_price", "is", null)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data || []).filter((b) => (b.promo_price ?? 0) > 0 && (b.promo_price ?? 0) < b.price);
+    },
+  });
+};
