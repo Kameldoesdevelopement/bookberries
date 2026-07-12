@@ -39,6 +39,58 @@ const AdminNoteEditor = ({ initial, onSave }: { initial: string; onSave: (v: str
   );
 };
 
+const ChangePasswordForm = ({ email }: { email: string }) => {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (next.length < 8) {
+      toast.error("New password must be at least 8 characters.");
+      return;
+    }
+    if (next !== confirm) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+    setLoading(true);
+    // Re-verify current password to prevent hijacked-session changes
+    const { error: reauthError } = await supabase.auth.signInWithPassword({ email, password: current });
+    if (reauthError) {
+      setLoading(false);
+      toast.error("Current password is incorrect.");
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: next });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setCurrent(""); setNext(""); setConfirm("");
+    toast.success("Password updated.");
+  };
+
+  const cls = "w-full rounded-lg border border-input bg-background px-4 py-3 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+
+  return (
+    <div className="max-w-md rounded-lg border border-border bg-card p-6">
+      <h2 className="font-display text-xl font-semibold text-foreground mb-1">Change password</h2>
+      <p className="text-xs text-muted-foreground mb-5">Signed in as {email}</p>
+      <form onSubmit={submit} className="space-y-4">
+        <input type="password" autoComplete="current-password" className={cls} placeholder="Current password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+        <input type="password" autoComplete="new-password" className={cls} placeholder="New password (min 8 chars)" value={next} onChange={(e) => setNext(e.target.value)} />
+        <input type="password" autoComplete="new-password" className={cls} placeholder="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <Button variant="warm" type="submit" className="w-full" disabled={loading || !current || !next || !confirm}>
+          {loading ? "Updating..." : "Update password"}
+        </Button>
+      </form>
+    </div>
+  );
+};
+
 const Admin = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
