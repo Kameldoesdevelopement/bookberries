@@ -301,6 +301,7 @@ const Admin = () => {
           <button className={tabClass("add-accessory")} onClick={() => setTab("add-accessory")}><ShoppingBag className="inline-block h-4 w-4 mr-1.5" />Add Accessory</button>
           <button className={tabClass("manage-books")} onClick={() => setTab("manage-books")}><Library className="inline-block h-4 w-4 mr-1.5" />Manage Books</button>
           <button className={tabClass("manage-accessories")} onClick={() => setTab("manage-accessories")}><ShoppingBag className="inline-block h-4 w-4 mr-1.5" />Manage Accessories</button>
+          <button className={tabClass("settings")} onClick={() => setTab("settings")}><KeyRound className="inline-block h-4 w-4 mr-1.5" />Settings</button>
         </div>
 
         {tab === "orders" && (
