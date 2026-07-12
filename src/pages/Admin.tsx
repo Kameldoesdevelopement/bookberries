@@ -502,6 +502,7 @@ const Admin = () => {
 
         {tab === "manage-books" && <ManageBooks />}
         {tab === "manage-accessories" && <ManageAccessories />}
+        {tab === "settings" && <ChangePasswordForm email={session.user.email || ""} />}
       </div>
     </main>
   );
