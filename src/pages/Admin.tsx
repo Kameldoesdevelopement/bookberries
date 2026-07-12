@@ -44,7 +44,7 @@ const Admin = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [authStatus, setAuthStatus] = useState<"loading" | "signed-in" | "signed-out">("loading");
   const [adminStatus, setAdminStatus] = useState<"idle" | "checking" | "admin" | "denied">("idle");
-  const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books" | "manage-accessories">("orders");
+  const [tab, setTab] = useState<"orders" | "requests" | "add-book" | "add-accessory" | "manage-books" | "manage-accessories" | "settings">("orders");
   const queryClient = useQueryClient();
 
   const [orders, setOrders] = useState<Order[]>([]);
