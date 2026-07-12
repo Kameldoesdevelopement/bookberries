@@ -3,7 +3,7 @@ import { GENRES } from "@/data/books";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Package, MessageSquare, Plus, Check, Trash2, ShoppingBag, Library, BookOpen } from "lucide-react";
+import { Package, MessageSquare, Plus, Check, Trash2, ShoppingBag, Library, BookOpen, KeyRound } from "lucide-react";
 import ManageBooks from "@/components/admin/ManageBooks";
 import ManageAccessories from "@/components/admin/ManageAccessories";
 import { supabase } from "@/integrations/supabase/client";
