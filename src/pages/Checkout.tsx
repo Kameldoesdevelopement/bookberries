@@ -10,6 +10,31 @@ import { CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getEffectivePrice, isOnPromotion } from "@/data/books";
 
+type OrderResponse = {
+  order_id?: string;
+  total_price?: number;
+  error?: string;
+};
+
+const getFunctionErrorMessage = async (error: unknown) => {
+  if (typeof error === "string") return error;
+  if (!error || typeof error !== "object") return "The order service is temporarily unavailable";
+
+  const functionError = error as { message?: string; context?: Response };
+  if (functionError.context) {
+    try {
+      const body = await functionError.context.clone().json() as { error?: string };
+      if (body.error) return body.error;
+    } catch {
+      // The response did not contain JSON; fall back to the safe message below.
+    }
+  }
+
+  return functionError.message === "Edge Function returned a non-2xx status code"
+    ? "The order service is temporarily unavailable"
+    : functionError.message || "Network error";
+};
+
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
@@ -76,7 +101,10 @@ const Checkout = () => {
       deliveryInfo = `pickup - ${deskName}`;
     }
 
+    // Reuse one ID across retries so a lost response cannot create duplicate orders.
+    const requestId = crypto.randomUUID();
     const payload = {
+      request_id: requestId,
       customer_name: form.name,
       phone: form.phone,
       wilaya: form.wilaya,
@@ -90,16 +118,17 @@ const Checkout = () => {
     };
 
     // Retry up to 3 times to survive cold-starts / transient network blips
-    let lastError: any = null;
-    let data: any = null;
+    let lastError: unknown = null;
+    let data: OrderResponse | null = null;
     for (let attempt = 1; attempt <= 3; attempt++) {
       const res = await supabase.functions.invoke("create-order", { body: payload });
-      if (!res.error && !(res.data as any)?.error) {
-        data = res.data;
+      const responseData = res.data as OrderResponse | null;
+      if (!res.error && !responseData?.error) {
+        data = responseData;
         lastError = null;
         break;
       }
-      lastError = res.error || (res.data as any)?.error;
+      lastError = res.error || responseData?.error;
       console.error(`Order attempt ${attempt} failed:`, lastError);
       if (attempt < 3) {
         await new Promise((r) => setTimeout(r, 800 * attempt));
@@ -108,11 +137,13 @@ const Checkout = () => {
 
     setLoading(false);
     if (lastError) {
-      const msg =
-        typeof lastError === "string"
-          ? lastError
-          : lastError?.message || "Network error";
+      const msg = await getFunctionErrorMessage(lastError);
       toast.error(`Failed to place order: ${msg}. Your cart is saved — please try again.`);
+      return;
+    }
+
+    if (!data?.order_id) {
+      toast.error("The order could not be confirmed. Your cart is saved — please try again.");
       return;
     }
 

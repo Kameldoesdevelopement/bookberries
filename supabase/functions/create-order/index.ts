@@ -78,6 +78,7 @@ interface OrderItemInput {
 }
 
 interface OrderRequest {
+  request_id?: string;
   customer_name: string;
   phone: string;
   wilaya: string;
@@ -93,6 +94,8 @@ function badRequest(msg: string) {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -123,6 +126,10 @@ Deno.serve(async (req) => {
     const customerNotes = typeof body.customer_notes === "string"
       ? body.customer_notes.trim().slice(0, 1000) || null
       : null;
+
+    if (body.request_id !== undefined && !UUID_PATTERN.test(body.request_id)) {
+      return badRequest("Invalid request ID");
+    }
 
     if (name.length < 2 || name.length > 120) return badRequest("Invalid name");
     if (phone.length < 6 || phone.length > 30) return badRequest("Invalid phone");
@@ -177,12 +184,12 @@ Deno.serve(async (req) => {
     const deliveryFee =
       body.delivery_mode === "home" ? pricing.home : pricing.desk;
     const itemsTotal = body.items.reduce((sum, it) => {
-      const b = bookMap.get(it.book_id)!;
-      return sum + effectivePrice(b) * it.quantity;
+      const book = bookMap.get(it.book_id);
+      return book ? sum + effectivePrice(book) * it.quantity : sum;
     }, 0);
     const totalPrice = itemsTotal + deliveryFee;
 
-    const orderId = crypto.randomUUID();
+    const orderId = body.request_id ?? crypto.randomUUID();
     const { error: orderErr } = await supabase.from("orders").insert({
       id: orderId,
       customer_name: name,
@@ -194,6 +201,24 @@ Deno.serve(async (req) => {
       customer_notes: customerNotes,
     });
     if (orderErr) {
+      // A retry can arrive after the first request committed but its response was lost.
+      // Treat the existing order as success instead of creating a duplicate or failing.
+      if (orderErr.code === "23505" && body.request_id) {
+        const { data: existingOrder } = await supabase
+          .from("orders")
+          .select("id, total_price")
+          .eq("id", orderId)
+          .maybeSingle();
+        if (existingOrder) {
+          return new Response(JSON.stringify({
+            order_id: existingOrder.id,
+            total_price: existingOrder.total_price,
+          }), {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
       console.error("order insert error", orderErr);
       return new Response(JSON.stringify({ error: "Failed to create order" }), {
         status: 500,
@@ -202,15 +227,16 @@ Deno.serve(async (req) => {
     }
 
     const itemRows = body.items.map((it) => {
-      const b = bookMap.get(it.book_id)!;
+      const book = bookMap.get(it.book_id);
+      if (!book) return null;
       return {
         order_id: orderId,
         book_id: it.book_id,
-        title: b.title,
+        title: book.title,
         quantity: it.quantity,
-        price: effectivePrice(b),
+        price: effectivePrice(book),
       };
-    });
+    }).filter((row): row is NonNullable<typeof row> => row !== null);
     const { error: itemsErr } = await supabase.from("order_items").insert(itemRows);
     if (itemsErr) {
       console.error("order items insert error", itemsErr);
