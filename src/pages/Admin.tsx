@@ -219,33 +219,55 @@ const Admin = () => {
   };
 
   const markOrderCompleted = async (id: string) => {
-    await supabase.from("orders").update({ status: "completed" }).eq("id", id);
-    setOrders(orders.map((o) => o.id === id ? { ...o, status: "completed" } : o));
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ status: "completed" })
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
+    if (error || !data) {
+      toast.error("Failed to update order. Please try again.");
+      return;
+    }
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: "completed" } : o)));
     toast.success("Order marked as completed");
   };
 
   const deleteOrder = async (id: string) => {
-    await supabase.from("orders").delete().eq("id", id);
-    setOrders(orders.filter((o) => o.id !== id));
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete order");
+      return;
+    }
+    setOrders((prev) => prev.filter((o) => o.id !== id));
     toast.success("Order deleted");
   };
 
   const saveAdminNotes = async (id: string, notes: string) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("orders")
       .update({ admin_notes: notes })
-      .eq("id", id);
-    if (error) {
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
+    if (error || !data) {
       toast.error("Failed to save note");
       return;
     }
-    setOrders(orders.map((o) => (o.id === id ? { ...o, admin_notes: notes } : o)));
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, admin_notes: notes } : o)));
     toast.success("Note saved");
   };
 
   const resolveRequest = async (id: string) => {
-    await supabase.from("book_requests").update({ resolved: true }).eq("id", id);
-    setRequests(requests.map((r) => r.id === id ? { ...r, resolved: true } : r));
+    const { error } = await supabase
+      .from("book_requests")
+      .update({ resolved: true })
+      .eq("id", id);
+    if (error) {
+      toast.error("Failed to resolve request. Please try again.");
+      return;
+    }
+    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, resolved: true } : r)));
     toast.success("Request resolved");
   };
 
