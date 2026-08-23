@@ -117,10 +117,11 @@ const Checkout = () => {
       })),
     };
 
-    // Retry up to 3 times to survive cold-starts / transient network blips
+    // Retry to survive cold-starts / transient network blips.
+    // Validation errors (4xx) are permanent, so stop immediately on those.
     let lastError: unknown = null;
     let data: OrderResponse | null = null;
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let attempt = 1; attempt <= 4; attempt++) {
       const res = await supabase.functions.invoke("create-order", { body: payload });
       const responseData = res.data as OrderResponse | null;
       if (!res.error && !responseData?.error) {
@@ -130,8 +131,10 @@ const Checkout = () => {
       }
       lastError = res.error || responseData?.error;
       console.error(`Order attempt ${attempt} failed:`, lastError);
-      if (attempt < 3) {
-        await new Promise((r) => setTimeout(r, 800 * attempt));
+      const status = (res.error as { context?: Response } | null)?.context?.status;
+      if (status && status >= 400 && status < 500) break;
+      if (attempt < 4) {
+        await new Promise((r) => setTimeout(r, 700 * attempt));
       }
     }
 
