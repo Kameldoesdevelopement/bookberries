@@ -32,13 +32,13 @@ const Navbar = () => {
     : [];
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handler = (e: Event) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowSuggestions(false);
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("pointerdown", handler);
+    return () => document.removeEventListener("pointerdown", handler);
   }, []);
 
   const handleMobileSearch = (e: React.FormEvent) => {
