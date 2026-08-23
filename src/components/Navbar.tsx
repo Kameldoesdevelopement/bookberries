@@ -132,11 +132,7 @@ const Navbar = () => {
                   <button
                     key={book.id}
                     type="button"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSuggestionClick(book.id);
-                    }}
-                    onTouchStart={(e) => {
+                    onPointerDown={(e) => {
                       e.preventDefault();
                       handleSuggestionClick(book.id);
                     }}
