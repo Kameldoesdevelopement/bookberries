@@ -60,7 +60,7 @@ const AccessoryCard = ({ accessory }: AccessoryCardProps) => {
       <Link to={`/accessory/${accessory.id}`} className="block">
         <div className="aspect-square bg-muted relative overflow-hidden">
         {imageUrl ? (
-          <img src={imageUrl} alt={accessory.name} className="w-full h-full object-cover" />
+          <img loading="lazy" decoding="async" src={imageUrl} alt={accessory.name} className="w-full h-full object-cover" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center p-4 text-center bg-secondary">
             <h3 className="font-display text-lg font-bold text-foreground leading-tight">{accessory.name}</h3>

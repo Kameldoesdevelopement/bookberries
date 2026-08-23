@@ -6,7 +6,7 @@ import heroImage from "@/assets/hero-bookstore.webp";
 const HeroSection = () => (
   <section className="relative min-h-[85vh] flex items-center overflow-hidden">
     <div className="absolute inset-0">
-      <img src={heroImage} alt="Warm bookstore interior" className="w-full h-full object-cover" />
+      <img src={heroImage} alt="Warm bookstore interior" fetchPriority="high" decoding="async" className="w-full h-full object-cover" />
       <div className="hero-overlay absolute inset-0" />
     </div>
 
