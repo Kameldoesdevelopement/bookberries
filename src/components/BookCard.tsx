@@ -23,7 +23,7 @@ const BookCard = ({ book }: BookCardProps) => (
           </span>
         )}
         {book.image_url ? (
-          <img src={book.image_url} alt={book.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <img src={book.image_url} alt={book.title} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
         ) : (
           <div className={`w-full h-full bg-gradient-to-b ${book.cover_color}`}>
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">

@@ -139,7 +139,7 @@ const Navbar = () => {
                     className="flex items-center gap-3 w-full px-3 py-2.5 text-left hover:bg-secondary/60 active:bg-secondary transition-colors"
                   >
                     {book.image_url ? (
-                      <img src={book.image_url} alt="" className="h-10 w-7 object-cover rounded-sm flex-shrink-0" />
+                      <img src={book.image_url} alt="" loading="lazy" decoding="async" className="h-10 w-7 object-cover rounded-sm flex-shrink-0" />
                     ) : (
                       <div className="h-10 w-7 rounded-sm bg-muted flex-shrink-0" />
                     )}
