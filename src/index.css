@@ -123,13 +123,14 @@
 
 @layer components {
   .book-card {
-    @apply bg-card rounded-lg overflow-hidden transition-all duration-300 ease-out;
+    @apply bg-card rounded-md overflow-hidden border border-border/70 transition-all duration-300 ease-out;
     box-shadow: var(--card-shadow);
   }
 
   .book-card:hover {
-    transform: translateY(-6px);
+    transform: translateY(-4px);
     box-shadow: var(--card-shadow-hover);
+    border-color: hsl(var(--gold) / 0.45);
   }
 
   .genre-tag {
@@ -151,13 +152,28 @@
   }
 
   .hero-overlay {
-    background: var(--hero-gradient-soft);
+    background: var(--hero-overlay);
   }
 
   .warm-section {
     background: hsl(var(--warm-overlay));
   }
+
+  /* Editorial eyebrow label — vintage small caps, modern letterspacing */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 font-sans text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground;
+  }
+
+  .rule-gold {
+    @apply block h-px w-14 bg-accent/70;
+  }
+
+  .paper-texture {
+    background-image: radial-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
 }
+
 
 @layer utilities {
   .font-display {
