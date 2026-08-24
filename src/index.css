@@ -75,7 +75,7 @@
     --muted: 155 15% 14%;
     --muted-foreground: 145 12% 55%;
 
-    --accent: 150 40% 45%;
+    --accent: 44 58% 58%;
     --accent-foreground: 155 35% 8%;
 
     --destructive: 0 62.8% 30.6%;
@@ -92,14 +92,18 @@
     --sidebar-accent: 155 15% 14%;
     --sidebar-accent-foreground: 140 18% 88%;
     --sidebar-border: 155 12% 16%;
-    --sidebar-ring: 150 40% 45%;
+    --sidebar-ring: 44 58% 58%;
 
+    --gold: 44 58% 58%;
+    --gold-soft: 44 50% 70%;
+    --forest-deep: 156 30% 6%;
     --hero-gradient: linear-gradient(135deg, hsl(155 25% 10%), hsl(160 20% 7%));
-    --hero-gradient-soft: linear-gradient(180deg, hsl(155 25% 10% / 0.95), hsl(160 20% 7% / 0.98));
+    --hero-overlay: linear-gradient(100deg, hsl(156 30% 5% / 0.96) 0%, hsl(156 28% 7% / 0.88) 45%, hsl(155 25% 10% / 0.65) 100%);
     --card-shadow: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
     --card-shadow-hover: 0 12px 32px -8px hsl(0 0% 0% / 0.5);
     --parchment: 155 18% 10%;
     --warm-overlay: 145 15% 50% / 0.03;
+
   }
 }
 
