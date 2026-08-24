@@ -16,14 +16,14 @@ const BookCard = ({ book }: BookCardProps) => (
   >
     <Link to={`/book/${book.id}`} className="book-card block group">
       {/* Cover */}
-      <div className="aspect-[2/3] relative overflow-hidden bg-secondary">
+      <div className="aspect-[2/3] relative overflow-hidden">
         {isOnPromotion(book) && (
-          <span className="absolute top-2 left-2 z-10 rounded-sm bg-accent text-accent-foreground font-sans text-[10px] font-bold uppercase tracking-[0.14em] px-2 py-1">
-            Sale
+          <span className="absolute top-2 left-2 z-10 rounded-full bg-accent text-accent-foreground font-sans text-[10px] font-bold px-2 py-1 shadow">
+            SALE
           </span>
         )}
         {book.image_url ? (
-          <img src={book.image_url} alt={book.title} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <img src={book.image_url} alt={book.title} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
         ) : (
           <div className={`w-full h-full bg-gradient-to-b ${book.cover_color}`}>
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
@@ -44,11 +44,11 @@ const BookCard = ({ book }: BookCardProps) => (
 
       {/* Info */}
       <div className="p-4">
-        <h3 className="font-display text-[15px] font-semibold text-foreground leading-snug mb-1 line-clamp-1">
+        <h3 className="font-display text-sm font-semibold text-foreground leading-tight mb-1 line-clamp-1">
           {book.title}
         </h3>
-        <p className="font-sans text-[11px] uppercase tracking-[0.1em] text-muted-foreground mb-3 line-clamp-1">{book.author}</p>
-        <div className="flex items-center justify-between gap-2 border-t border-border/70 pt-3">
+        <p className="font-sans text-xs text-muted-foreground mb-2">{book.author}</p>
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-baseline gap-1.5">
             <span className="font-sans text-sm font-bold text-primary">
               {(isOnPromotion(book) ? (book.promo_price as number) : book.price).toLocaleString()} DZD
@@ -59,15 +59,14 @@ const BookCard = ({ book }: BookCardProps) => (
               </span>
             )}
           </div>
-          <div className="hidden gap-1 sm:flex">
-            {book.genre.slice(0, 1).map((g) => (
+          <div className="flex gap-1">
+            {book.genre.slice(0, 2).map((g) => (
               <span key={g} className="genre-tag text-[10px] px-2 py-0.5">{g}</span>
             ))}
           </div>
         </div>
       </div>
     </Link>
-
   </motion.div>
 );
 

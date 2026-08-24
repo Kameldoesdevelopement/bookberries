@@ -53,12 +53,6 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         parchment: "hsl(var(--parchment))",
-        gold: {
-          DEFAULT: "hsl(var(--gold))",
-          soft: "hsl(var(--gold-soft))",
-        },
-        "forest-deep": "hsl(var(--forest-deep))",
-
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

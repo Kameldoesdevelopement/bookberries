@@ -1,36 +1,41 @@
 import BookCard from "@/components/BookCard";
-import SectionHeading from "@/components/SectionHeading";
 import { useTrendingBooks } from "@/hooks/useBooks";
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 const TrendingBooks = () => {
   const { data: trending = [], isLoading } = useTrendingBooks();
 
   return (
-    <section className="py-20 md:py-24">
+    <section className="py-20 parchment-bg">
       <div className="container mx-auto px-4">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <SectionHeading
-            eyebrow="This season"
-            title="Trending Now"
-            description="What readers across Algeria are picking up right now."
-          />
-          <Link
-            to="/shop"
-            className="mb-10 hidden items-center gap-2 font-sans text-sm font-medium text-primary transition-all hover:gap-3 sm:inline-flex"
-          >
-            Browse all books <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 text-center"
+        >
+          <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+            Trending Now
+          </h2>
+          <p className="mt-3 text-muted-foreground">
+            What readers across Algeria are picking up this season.
+          </p>
+        </motion.div>
 
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-5">
-          {isLoading
-            ? Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="aspect-[2/3] animate-pulse rounded-md bg-muted" />
-              ))
-            : trending.map((book) => <BookCard key={book.id} book={book} />)}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="aspect-[2/3] animate-pulse rounded-lg bg-muted" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-5">
+            {trending.map((book) => (
+              <BookCard key={book.id} book={book} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
