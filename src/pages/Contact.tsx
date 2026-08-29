@@ -44,7 +44,7 @@ const Contact = () => (
           </div>
           <div>
             <h3 className="font-sans text-sm font-semibold text-foreground">Location</h3>
-            <p className="font-sans text-sm text-muted-foreground">Algeria — delivering to all 58 wilayas</p>
+            <p className="font-sans text-sm text-muted-foreground">Algeria, delivering to all 58 wilayas</p>
           </div>
         </div>
       </motion.div>

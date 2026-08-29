@@ -519,7 +519,7 @@ const Admin = () => {
                 {newBook.isPromotion && (
                   <div>
                     <label className="mb-1.5 block font-sans text-xs font-medium text-muted-foreground">
-                      New price (DZD) — must be lower than {newBook.price || "original price"}
+                      New price (DZD), must be lower than {newBook.price || "original price"}
                     </label>
                     <input
                       type="number"

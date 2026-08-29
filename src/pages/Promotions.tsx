@@ -36,7 +36,7 @@ const Promotions = () => {
           </div>
         ) : books.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-muted-foreground">No promotions right now — check back soon.</p>
+            <p className="text-muted-foreground">No promotions right now. Check back soon.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-5">

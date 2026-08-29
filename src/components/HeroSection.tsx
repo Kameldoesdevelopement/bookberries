@@ -34,7 +34,7 @@ const HeroSection = () => (
           transition={{ delay: 0.5, duration: 0.6 }}
           className="mt-4 max-w-lg text-base text-primary-foreground/70 leading-relaxed"
         >
-          Connecting readers across Algeria with the books they love — from timeless classics to the newest titles.
+          Connecting readers across Algeria with the books they love, from timeless classics to the newest titles.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
