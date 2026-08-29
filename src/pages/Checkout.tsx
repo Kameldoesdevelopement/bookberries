@@ -175,7 +175,7 @@ const Checkout = () => {
             Cash on delivery.
           </p>
           <p className="text-sm text-muted-foreground mb-6">
-            Estimated delivery: 7–14 days.
+            Estimated delivery: 7 to 14 days.
           </p>
           <Button variant="warm" onClick={() => navigate("/shop")}>
             Continue Shopping
@@ -200,7 +200,7 @@ const Checkout = () => {
             Cash on delivery, no payment needed now.
           </p>
           <p className="text-sm text-muted-foreground mb-8">
-            Delivery typically takes 7–14 days.
+            Delivery typically takes 7 to 14 days.
           </p>
 
           <div className="rounded-lg border border-border bg-card p-4 mb-8">
