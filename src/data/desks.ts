@@ -1,6 +1,6 @@
 // ZR Express delivery pricing and desk locations per wilaya
 // Prices from ZR Express PDF (all 520 DA replaced with 570 DA per user instruction)
-// "hors wilaya de Tlemcen" — shipped from Tlemcen
+// "hors wilaya de Tlemcen", shipped from Tlemcen
 
 export interface WilayaPricing {
   home: number;

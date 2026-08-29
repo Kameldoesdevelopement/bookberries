@@ -31,7 +31,7 @@ const PromotionsSection = () => {
             Current Promotions
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Save on a curated selection of titles — for a limited time.
+            Save on a curated selection of titles, for a limited time.
           </p>
         </motion.div>
 

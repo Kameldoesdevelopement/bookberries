@@ -141,12 +141,12 @@ const Checkout = () => {
     setLoading(false);
     if (lastError) {
       const msg = await getFunctionErrorMessage(lastError);
-      toast.error(`Failed to place order: ${msg}. Your cart is saved — please try again.`);
+      toast.error(`Failed to place order: ${msg}. Your cart is saved, please try again.`);
       return;
     }
 
     if (!data?.order_id) {
-      toast.error("The order could not be confirmed. Your cart is saved — please try again.");
+      toast.error("The order could not be confirmed. Your cart is saved, please try again.");
       return;
     }
 
@@ -175,7 +175,7 @@ const Checkout = () => {
             Cash on delivery.
           </p>
           <p className="text-sm text-muted-foreground mb-6">
-            Estimated delivery: 7–14 days.
+            Estimated delivery: 7 to 14 days.
           </p>
           <Button variant="warm" onClick={() => navigate("/shop")}>
             Continue Shopping
@@ -197,10 +197,10 @@ const Checkout = () => {
             Checkout
           </h1>
           <p className="text-muted-foreground mb-2">
-            Cash on delivery — no payment needed now.
+            Cash on delivery, no payment needed now.
           </p>
           <p className="text-sm text-muted-foreground mb-8">
-            Delivery typically takes 7–14 days.
+            Delivery typically takes 7 to 14 days.
           </p>
 
           <div className="rounded-lg border border-border bg-card p-4 mb-8">
@@ -238,8 +238,8 @@ const Checkout = () => {
                 <span className="font-sans text-sm text-muted-foreground">
                   Delivery (
                   {effectiveDeliveryType === "home"
-                    ? `Home — ${pricing?.home.toLocaleString()} DZD`
-                    : `Desk Pickup — ${pricing?.desk.toLocaleString()} DZD`}
+                    ? `Home: ${pricing?.home.toLocaleString()} DZD`
+                    : `Desk Pickup: ${pricing?.desk.toLocaleString()} DZD`}
                   )
                 </span>
                 <span className="font-sans text-sm text-foreground">
@@ -409,7 +409,7 @@ const Checkout = () => {
               {loading
                 ? "Placing Order..."
                 : form.wilaya
-                  ? `Place Order — ${grandTotal.toLocaleString()} DZD`
+                  ? `Place Order: ${grandTotal.toLocaleString()} DZD`
                   : "Select a wilaya to continue"}
             </Button>
           </form>
