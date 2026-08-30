@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { WILAYAS } from "@/data/books";
@@ -50,12 +50,15 @@ const Checkout = () => {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  if (items.length === 0 && !success) {
-    navigate("/cart");
-    return null;
-  }
+  const isEmpty = items.length === 0 && !success;
+
+  useEffect(() => {
+    if (isEmpty) navigate("/cart", { replace: true });
+  }, [isEmpty, navigate]);
+
 
   const canPickup = !NO_DESK_WILAYAS.includes(form.wilaya) && 
+
     (form.wilaya ? (WILAYA_PRICING[form.wilaya]?.desk ?? 0) > 0 : true);
   const desks = form.wilaya ? WILAYA_DESKS[form.wilaya] : null;
 
@@ -155,7 +158,10 @@ const Checkout = () => {
     toast.success("Order placed successfully!");
   };
 
+  if (isEmpty) return null;
+
   const inputClass =
+
     "w-full rounded-lg border border-input bg-background px-4 py-3 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow";
 
   if (success) {

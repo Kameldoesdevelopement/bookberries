@@ -177,9 +177,37 @@ Deno.serve(async (req) => {
         : b.price;
 
     const bookMap = new Map(books?.map((b) => [b.id, b]) ?? []);
-    for (const it of body.items) {
-      if (!bookMap.has(it.book_id)) return badRequest("Unknown book in cart");
+
+    // Accessories live in their own table but share the cart, so resolve any
+    // remaining ids against accessories before rejecting the order.
+    const missingIds = bookIds.filter((id) => !bookMap.has(id));
+    if (missingIds.length > 0) {
+      const { data: accessories, error: accErr } = await supabase
+        .from("accessories")
+        .select("id, name, price")
+        .in("id", missingIds);
+      if (accErr) {
+        console.error("accessories fetch error", accErr);
+        return new Response(JSON.stringify({ error: "Server error" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      for (const a of accessories ?? []) {
+        bookMap.set(a.id, {
+          id: a.id,
+          title: a.name,
+          price: a.price,
+          is_promotion: false,
+          promo_price: null,
+        });
+      }
     }
+
+    for (const it of body.items) {
+      if (!bookMap.has(it.book_id)) return badRequest("Unknown item in cart");
+    }
+
 
     const deliveryFee =
       body.delivery_mode === "home" ? pricing.home : pricing.desk;
