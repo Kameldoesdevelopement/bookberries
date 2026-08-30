@@ -158,7 +158,10 @@ const Checkout = () => {
     toast.success("Order placed successfully!");
   };
 
+  if (isEmpty) return null;
+
   const inputClass =
+
     "w-full rounded-lg border border-input bg-background px-4 py-3 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow";
 
   if (success) {
