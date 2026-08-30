@@ -50,10 +50,12 @@ const Checkout = () => {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  if (items.length === 0 && !success) {
-    navigate("/cart");
-    return null;
-  }
+  const isEmpty = items.length === 0 && !success;
+
+  useEffect(() => {
+    if (isEmpty) navigate("/cart", { replace: true });
+  }, [isEmpty, navigate]);
+
 
   const canPickup = !NO_DESK_WILAYAS.includes(form.wilaya) && 
     (form.wilaya ? (WILAYA_PRICING[form.wilaya]?.desk ?? 0) > 0 : true);
