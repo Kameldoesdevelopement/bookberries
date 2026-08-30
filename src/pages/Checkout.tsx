@@ -58,6 +58,7 @@ const Checkout = () => {
 
 
   const canPickup = !NO_DESK_WILAYAS.includes(form.wilaya) && 
+
     (form.wilaya ? (WILAYA_PRICING[form.wilaya]?.desk ?? 0) > 0 : true);
   const desks = form.wilaya ? WILAYA_DESKS[form.wilaya] : null;
 
