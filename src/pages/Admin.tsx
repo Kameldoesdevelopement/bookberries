@@ -11,8 +11,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
 import { useNavigate } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
+import { loadOrderPage, type AdminOrder } from "@/lib/admin-orders";
 
-type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
+type Order = AdminOrder;
 type BookRequest = Tables<"book_requests"> & { phone?: string | null };
 
 const AdminNoteEditor = ({ initial, onSave }: { initial: string; onSave: (v: string) => void | Promise<void> }) => {
@@ -102,6 +103,9 @@ const Admin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [requests, setRequests] = useState<BookRequest[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
+  const [orderPage, setOrderPage] = useState(0);
+  const [hasMoreOrders, setHasMoreOrders] = useState(false);
+  const [ordersError, setOrdersError] = useState(false);
   const [loadingRequests, setLoadingRequests] = useState(false);
 
   const [newBook, setNewBook] = useState({
@@ -115,35 +119,31 @@ const Admin = () => {
 
   const fetchOrders = async () => {
     setLoadingOrders(true);
-    const { data: orderData, error: orderError } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-    if (orderError) {
-      console.error("fetchOrders orders error:", orderError);
-      toast.error(`Failed to load orders: ${orderError.message}`);
-      setOrders([]);
+    setOrdersError(false);
+    try {
+      const result = await queryClient.fetchQuery({
+        queryKey: ["admin-orders", session?.user.id, orderPage],
+        staleTime: 0,
+        retry: 2,
+        retryDelay: attempt => Math.min(1000 * (attempt + 1), 3000),
+        queryFn: async () => {
+          const controller = new AbortController();
+          const timeout = window.setTimeout(() => controller.abort(), 20000);
+          try {
+            return await loadOrderPage(supabase, orderPage, controller.signal);
+          } finally {
+            window.clearTimeout(timeout);
+          }
+        },
+      });
+      setOrders(result.orders);
+      setHasMoreOrders(result.hasMore);
+    } catch (error) {
+      console.error("fetchOrders error:", error);
+      setOrdersError(true);
+    } finally {
       setLoadingOrders(false);
-      return;
     }
-
-    const orderIds = (orderData || []).map((order) => order.id);
-    const { data: itemData, error: itemError } = orderIds.length
-      ? await supabase.from("order_items").select("*").in("order_id", orderIds)
-      : { data: [], error: null };
-
-    if (itemError) {
-      console.error("fetchOrders items error:", itemError);
-      toast.error(`Failed to load order items: ${itemError.message}`);
-    }
-
-    const itemsByOrder = ((itemData as Tables<"order_items">[]) || []).reduce<Record<string, Tables<"order_items">[]>>((acc, item) => {
-      acc[item.order_id] = [...(acc[item.order_id] || []), item];
-      return acc;
-    }, {});
-
-    setOrders(((orderData || []) as Tables<"orders">[]).map((order) => ({
-      ...order,
-      order_items: itemsByOrder[order.id] || [],
-    })));
-    setLoadingOrders(false);
   };
 
   const fetchRequests = async () => {
@@ -203,6 +203,11 @@ const Admin = () => {
   useEffect(() => {
     if (adminStatus === "admin") {
       fetchOrders();
+    }
+  }, [adminStatus, orderPage]);
+
+  useEffect(() => {
+    if (adminStatus === "admin") {
       fetchRequests();
     }
   }, [adminStatus]);
@@ -380,15 +385,24 @@ const Admin = () => {
 
         {tab === "orders" && (
           <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="text-sm text-muted-foreground">Page {orderPage + 1}</span>
+              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders}>Refresh orders</Button>
+            </div>
             {loadingOrders ? (
               <p className="text-muted-foreground py-8 text-center">Loading orders...</p>
+            ) : ordersError ? (
+              <div className="py-8 text-center space-y-3" role="alert">
+                <p className="text-muted-foreground">Orders could not load. Check your connection and try again.</p>
+                <Button variant="warm" onClick={fetchOrders}>Retry</Button>
+              </div>
             ) : orders.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center">No orders yet.</p>
             ) : (
               orders.map((order) => (
                 <div key={order.id} className="rounded-lg border border-border bg-card p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
-                    <div>
+                    <div className="min-w-0 break-words">
                       <h3 className="font-sans text-sm font-semibold text-foreground">{order.customer_name}</h3>
                       <p className="font-sans text-xs text-muted-foreground">{order.phone} · {order.wilaya} · {order.delivery_type}</p>
                       <p className="font-sans text-[11px] text-muted-foreground mt-1">
@@ -431,6 +445,10 @@ const Admin = () => {
                 </div>
               ))
             )}
+            <div className="flex justify-between gap-3">
+              <Button variant="outline" disabled={loadingOrders || orderPage === 0} onClick={() => setOrderPage(page => page - 1)}>Previous</Button>
+              <Button variant="outline" disabled={loadingOrders || ordersError || !hasMoreOrders} onClick={() => setOrderPage(page => page + 1)}>Next</Button>
+            </div>
           </div>
         )}
 
