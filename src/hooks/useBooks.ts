@@ -1,15 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Book } from "@/data/books";
+import { loadBooks } from "@/lib/catalog";
 
 export const useBooks = () => {
   return useQuery<Book[]>({
     queryKey: ["books"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("books").select("*").order("created_at", { ascending: true });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: ({ signal }) => loadBooks(supabase, signal),
   });
 };
 
@@ -18,7 +15,8 @@ export const useBook = (id: string | undefined) => {
     queryKey: ["book", id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await supabase.from("books").select("*").eq("id", id!).maybeSingle();
+      if (!id) return null;
+      const { data, error } = await supabase.from("books").select("*").eq("id", id).maybeSingle();
       if (error) throw error;
       return data;
     },

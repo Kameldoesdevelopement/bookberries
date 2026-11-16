@@ -6,6 +6,7 @@ import { Trash2, Pencil, X, Save, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
+import { loadBooks } from "@/lib/catalog";
 
 type Book = Tables<"books">;
 
@@ -21,9 +22,14 @@ const ManageBooks = () => {
 
   const fetchBooks = async () => {
     setLoading(true);
-    const { data } = await supabase.from("books").select("*").order("created_at", { ascending: false });
-    setBooks(data || []);
-    setLoading(false);
+    try {
+      const data = await loadBooks(supabase);
+      setBooks(data.reverse());
+    } catch {
+      toast.error("Failed to load books. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchBooks(); }, []);
