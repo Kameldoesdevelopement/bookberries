@@ -9,6 +9,7 @@ export type Accessory = {
   image_url: string;
   category: string;
   created_at: string;
+  is_published: boolean;
 };
 
 export const useAccessories = () => {

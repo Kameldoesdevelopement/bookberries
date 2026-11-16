@@ -72,6 +72,7 @@ const ManageBooks = () => {
       image_url: editData.image_url,
       is_promotion: isPromo,
       promo_price: isPromo ? promoPrice : null,
+      is_published: editData.is_published,
     }).eq("id", editingId);
     if (error) { toast.error("Failed to update"); return; }
     setBooks(books.map((b) => b.id === editingId ? { ...b, ...editData } : b));
@@ -171,6 +172,10 @@ const ManageBooks = () => {
                   </div>
                 )}
               </div>
+              <label className="flex items-center gap-2 font-sans text-sm text-foreground">
+                <input type="checkbox" checked={editData.is_published ?? true} onChange={(e) => setEditData({ ...editData, is_published: e.target.checked })} className="accent-primary" />
+                Published (visible to customers)
+              </label>
               <div className="flex gap-2">
                 <Button size="sm" variant="warm" onClick={saveEdit}><Save className="h-3 w-3 mr-1" />Save</Button>
                 <Button size="sm" variant="ghost" onClick={cancelEdit}><X className="h-3 w-3 mr-1" />Cancel</Button>
@@ -187,6 +192,7 @@ const ManageBooks = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-sans text-sm font-semibold text-foreground truncate">{book.title}</h3>
+                {!book.is_published && <p className="text-xs text-muted-foreground">Unpublished: hidden from customers</p>}
                 <p className="font-sans text-xs text-muted-foreground">{book.author} · {book.price} DZD</p>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {book.genre?.slice(0, 3).map((g) => (

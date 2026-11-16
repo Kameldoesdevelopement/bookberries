@@ -64,6 +64,7 @@ const AccessoryDetails = () => {
       cover_color: "from-emerald-700 to-emerald-900",
       cover_accent: "bg-emerald-200",
       is_trending: false,
+      is_published: accessory.is_published,
       is_promotion: false,
       promo_price: null,
       created_at: accessory.created_at,

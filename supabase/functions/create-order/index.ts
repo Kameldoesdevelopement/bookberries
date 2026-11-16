@@ -161,6 +161,7 @@ Deno.serve(async (req) => {
     const { data: books, error: booksErr } = await supabase
       .from("books")
       .select("id, title, price, is_promotion, promo_price")
+      .eq("is_published", true)
       .in("id", bookIds);
 
     if (booksErr) {
@@ -185,6 +186,7 @@ Deno.serve(async (req) => {
       const { data: accessories, error: accErr } = await supabase
         .from("accessories")
         .select("id, name, price")
+        .eq("is_published", true)
         .in("id", missingIds);
       if (accErr) {
         console.error("accessories fetch error", accErr);
