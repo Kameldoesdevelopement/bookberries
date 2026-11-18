@@ -12,27 +12,41 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [recovering, setRecovering] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate("/admin");
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) navigate("/admin");
     });
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!email.trim() || (!recovering && !password)) {
       toast.error("Please enter email and password.");
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    setErrorMessage("");
+    try {
+      if (recovering) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) { setErrorMessage(error.message); return; }
+        setSent(true);
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (error) { setErrorMessage(error.message); return; }
+        navigate("/admin", { replace: true });
+      }
+    } catch {
+      setErrorMessage("Unable to connect. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    navigate("/admin", { replace: true });
   };
 
   const inputClass =
@@ -49,25 +63,29 @@ const Auth = () => {
           <div className="text-center mb-6">
             <Lock className="mx-auto h-10 w-10 text-primary mb-3" />
             <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-              Admin Sign In
+              {recovering ? "Forgot Password" : "Admin Sign In"}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Sign in to access the dashboard.
+              {recovering ? "Get a password reset link by email." : "Sign in to access the dashboard."}
             </p>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {sent ? <p role="status" className="text-sm text-muted-foreground">If an account exists for this email, a reset link will be sent. Check your inbox and spam folder.</p> : <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="email"
+              aria-label="Email address"
+              required
               autoComplete="email"
               className={inputClass}
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <div className="relative">
+            {!recovering && <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
+                aria-label="Password"
+                required
                 className={inputClass + " pr-10"}
                 placeholder="Password"
                 value={password}
@@ -80,11 +98,15 @@ const Auth = () => {
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
-            </div>
+            </div>}
+            {errorMessage && <p role="alert" className="text-sm text-destructive">{errorMessage}</p>}
             <Button variant="warm" className="w-full" type="submit" disabled={loading}>
-              {loading ? "Please wait..." : "Sign In"}
+              {loading ? "Please wait..." : recovering ? "Send Reset Link" : "Sign In"}
             </Button>
-          </form>
+          </form>}
+          <Button variant="link" className="mt-3 w-full" disabled={loading} onClick={() => { setRecovering(!recovering); setSent(false); setErrorMessage(""); setPassword(""); }}>
+            {recovering ? "Back to Sign In" : "Forgot password?"}
+          </Button>
         </div>
       </motion.div>
     </main>
