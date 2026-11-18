@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
 import "@/lib/password-recovery";
+import RecoveryRedirect from "@/components/RecoveryRedirect";
 
 const Shop = lazy(() => import("./pages/Shop"));
 const Promotions = lazy(() => import("./pages/Promotions"));
@@ -47,6 +48,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <RecoveryRedirect />
           <div className="flex min-h-screen flex-col">
             <Navbar />
             <div className="flex-1">

@@ -2,9 +2,19 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { auth: { onAuthStateChange: vi.fn() } },
 }));
-import { isRecoveryHash, validateNewPassword } from "./password-recovery";
+import { isRecoveryHash, shouldRouteToRecovery, validateNewPassword } from "./password-recovery";
 
 describe("password recovery", () => {
+  it("routes recovery links landing on the homepage to reset, including after the hash is consumed", () => {
+    expect(shouldRouteToRecovery("/", "#type=recovery&access_token=test", false)).toBe(true);
+    expect(shouldRouteToRecovery("/", "", true)).toBe(true);
+    expect(shouldRouteToRecovery("/reset-password", "", true)).toBe(false);
+  });
+  it("routes expired email links to reset but never ordinary sessions", () => {
+    expect(shouldRouteToRecovery("/", "#error_code=otp_expired", false)).toBe(true);
+    expect(shouldRouteToRecovery("/", "#type=signup", false)).toBe(false);
+    expect(shouldRouteToRecovery("/", "", false)).toBe(false);
+  });
   it("accepts only recovery intent, not ordinary sign-in links", () => {
     expect(isRecoveryHash("#type=recovery&access_token=test")).toBe(true);
     expect(isRecoveryHash("#type=signup&access_token=test")).toBe(false);

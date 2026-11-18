@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { hasRecoveryIntent } from "@/lib/password-recovery";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const Auth = () => {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) navigate("/admin");
+      if (user) navigate(hasRecoveryIntent() ? "/reset-password" : "/admin", { replace: true });
     });
   }, [navigate]);
 
