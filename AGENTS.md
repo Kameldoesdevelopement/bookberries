@@ -1,0 +1,1 @@
+- Use the Supabase SDK CORS header export for web-callable edge functions so browser SDK upgrades do not block external deployments.

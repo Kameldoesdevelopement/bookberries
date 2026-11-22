@@ -1,9 +1,16 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { corsHeaders as sdkCorsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
+// Some deployed web SDK versions include platform metadata beyond the SDK's defaults.
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  ...sdkCorsHeaders,
+  "Access-Control-Allow-Headers": [
+    sdkCorsHeaders["Access-Control-Allow-Headers"],
+    "x-supabase-client-platform",
+    "x-supabase-client-platform-version",
+    "x-supabase-client-runtime",
+    "x-supabase-client-runtime-version",
+  ].join(", "),
 };
 
 interface WilayaPricing {

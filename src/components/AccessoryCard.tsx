@@ -41,6 +41,7 @@ const AccessoryCard = ({ accessory }: AccessoryCardProps) => {
       cover_color: "from-emerald-700 to-emerald-900",
       cover_accent: "bg-emerald-200",
       is_trending: false,
+      is_published: true,
       is_promotion: false,
       promo_price: null,
       created_at: accessory.created_at,
