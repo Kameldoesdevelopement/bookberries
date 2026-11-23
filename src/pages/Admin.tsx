@@ -115,31 +115,60 @@ const Admin = () => {
 
   const fetchOrders = async () => {
     setLoadingOrders(true);
-    const { data: orderData, error: orderError } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-    if (orderError) {
-      console.error("fetchOrders orders error:", orderError);
-      toast.error(`Failed to load orders: ${orderError.message}`);
-      setOrders([]);
-      setLoadingOrders(false);
-      return;
+
+    // Load all orders, 1000 at a time (the database returns at most 1000 rows per request)
+    const orderData: Tables<"orders">[] = [];
+    const PAGE_SIZE = 1000;
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, from + PAGE_SIZE - 1);
+      if (error) {
+        console.error("fetchOrders orders error:", error);
+        toast.error(`Failed to load orders: ${error.message}`);
+        setOrders([]);
+        setLoadingOrders(false);
+        return;
+      }
+      orderData.push(...(data || []));
+      if (!data || data.length < PAGE_SIZE) break;
     }
 
-    const orderIds = (orderData || []).map((order) => order.id);
-    const { data: itemData, error: itemError } = orderIds.length
-      ? await supabase.from("order_items").select("*").in("order_id", orderIds)
-      : { data: [], error: null };
-
-    if (itemError) {
-      console.error("fetchOrders items error:", itemError);
-      toast.error(`Failed to load order items: ${itemError.message}`);
+    // Load order items in small batches so the request URL stays short
+    const orderIds = orderData.map((order) => order.id);
+    const BATCH_SIZE = 50;
+    const batches: string[][] = [];
+    for (let i = 0; i < orderIds.length; i += BATCH_SIZE) {
+      batches.push(orderIds.slice(i, i + BATCH_SIZE));
     }
 
-    const itemsByOrder = ((itemData as Tables<"order_items">[]) || []).reduce<Record<string, Tables<"order_items">[]>>((acc, item) => {
+    const results = await Promise.all(
+      batches.map((ids) => supabase.from("order_items").select("*").in("order_id", ids))
+    );
+
+    const itemData: Tables<"order_items">[] = [];
+    let itemsFailed = false;
+    for (const { data, error } of results) {
+      if (error) {
+        console.error("fetchOrders items error:", error);
+        itemsFailed = true;
+        continue;
+      }
+      itemData.push(...((data as Tables<"order_items">[]) || []));
+    }
+    if (itemsFailed) {
+      toast.error("Failed to load some order items");
+    }
+
+    const itemsByOrder = itemData.reduce<Record<string, Tables<"order_items">[]>>((acc, item) => {
       acc[item.order_id] = [...(acc[item.order_id] || []), item];
       return acc;
     }, {});
 
-    setOrders(((orderData || []) as Tables<"orders">[]).map((order) => ({
+    setOrders(orderData.map((order) => ({
       ...order,
       order_items: itemsByOrder[order.id] || [],
     })));
