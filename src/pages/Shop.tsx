@@ -6,10 +6,12 @@ import BookCard from "@/components/BookCard";
 import AccessoryCard from "@/components/AccessoryCard";
 import { Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "@/context/ThemeContext";
 
 type ShopTab = "books" | "accessories";
 
 const Shop = () => {
+  const { theme } = useTheme();
   const [search, setSearch] = useState("");
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [shopTab, setShopTab] = useState<ShopTab>("books");
@@ -93,7 +95,7 @@ const Shop = () => {
                   </motion.div>
                 ) : (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center">
-                    <p className="text-muted-foreground">No books found. Try a different search or filter.</p>
+                    <p className="text-muted-foreground">{theme === "cozy" ? "That story is playing hide-and-seek. Try another title or author." : "No books found. Try a different search or filter."}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -116,7 +118,7 @@ const Shop = () => {
               </motion.div>
             ) : (
               <div className="py-20 text-center">
-                <p className="text-muted-foreground">No accessories found.</p>
+                <p className="text-muted-foreground">{theme === "cozy" ? "No little reading treats here yet. Try another search." : "No accessories found."}</p>
               </div>
             )}
           </>

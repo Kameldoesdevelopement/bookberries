@@ -1,1 +1,2 @@
 - Use the Supabase SDK CORS header export for web-callable edge functions so browser SDK upgrades do not block external deployments.
+- Initialize the saved Default/Cozy theme with the blocking public theme script before paint; keep Cozy tokens and atmosphere scoped to data-theme so Default stays unchanged.

@@ -168,3 +168,136 @@
     text-wrap: balance;
   }
 }
+
+/* The original palette above is deliberately untouched. */
+@layer base {
+  :root[data-theme="cozy"] {
+    color-scheme: dark;
+    --background: 24 28% 10%;
+    --foreground: 38 48% 90%;
+    --card: 25 26% 15%;
+    --card-foreground: 38 48% 90%;
+    --popover: 25 26% 15%;
+    --popover-foreground: 38 48% 90%;
+    --primary: 31 58% 67%;
+    --primary-foreground: 24 32% 12%;
+    --secondary: 25 24% 21%;
+    --secondary-foreground: 38 48% 90%;
+    --muted: 25 20% 20%;
+    --muted-foreground: 32 25% 70%;
+    --accent: 29 56% 62%;
+    --accent-foreground: 24 32% 12%;
+    --destructive: 5 68% 65%;
+    --destructive-foreground: 24 32% 12%;
+    --border: 28 22% 31%;
+    --input: 28 22% 35%;
+    --ring: 31 58% 67%;
+    --radius: 0.75rem;
+    --sidebar-background: 24 28% 12%;
+    --sidebar-foreground: 38 48% 90%;
+    --sidebar-primary: 31 58% 67%;
+    --sidebar-primary-foreground: 24 32% 12%;
+    --sidebar-accent: 25 24% 21%;
+    --sidebar-accent-foreground: 38 48% 90%;
+    --sidebar-border: 28 22% 31%;
+    --sidebar-ring: 31 58% 67%;
+    --hero-gradient: linear-gradient(135deg, hsl(24 28% 10%), hsl(25 26% 15%));
+    --hero-gradient-soft: linear-gradient(90deg, hsl(24 28% 10% / 0.9), hsl(24 28% 10% / 0.62));
+    --card-shadow: 0 5px 24px -8px hsl(20 50% 4% / 0.55);
+    --card-shadow-hover: 0 10px 28px -10px hsl(29 56% 62% / 0.32);
+    --parchment: 24 27% 12%;
+    --warm-overlay: 29 56% 62% / 0.04;
+    --cozy-fire: 26 85% 59%;
+    --cozy-paper: 38 48% 90%;
+    --cozy-steam: 38 48% 90%;
+  }
+}
+
+@layer components {
+  [data-theme="cozy"] body,
+  [data-theme="cozy"] .font-body,
+  [data-theme="cozy"] .font-sans {
+    font-family: 'Nunito', 'Trebuchet MS', sans-serif;
+  }
+  [data-theme="cozy"] :is(h1, h2, h3, h4, h5, h6, .font-display) {
+    font-family: 'Lora', Georgia, serif;
+  }
+  [data-theme="cozy"] .bookstore-hero :is(h1, p) {
+    color: hsl(var(--foreground));
+  }
+  [data-theme="cozy"] .bookstore-hero p { opacity: 0.85; }
+  [data-theme="cozy"] .book-card { border: 1px solid hsl(var(--border)); }
+  [data-theme="cozy"] .cozy-lift {
+    border-radius: var(--radius);
+    transition: background-color 350ms ease, color 350ms ease, transform 250ms ease, box-shadow 250ms ease;
+  }
+  @media (hover: hover) {
+    [data-theme="cozy"] .cozy-lift:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow-hover);
+    }
+    [data-theme="cozy"] .book-card:hover { transform: translateY(-4px); }
+  }
+  .theme-transition body,
+  .theme-transition :is(nav, main, section, footer, input, textarea, .book-card, .genre-tag) {
+    transition: background-color 450ms ease, color 450ms ease, border-color 450ms ease, box-shadow 450ms ease, transform 300ms ease;
+  }
+  .cozy-atmosphere {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    overflow: hidden;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 600ms ease, visibility 600ms;
+  }
+  [data-theme="cozy"] .cozy-atmosphere { visibility: visible; opacity: 1; }
+  .cozy-firelight, .cozy-paper { position: absolute; inset: 0; }
+  .cozy-firelight {
+    background: radial-gradient(ellipse at bottom left, hsl(var(--cozy-fire) / 0.08), transparent 38%),
+      radial-gradient(ellipse at top right, hsl(var(--cozy-fire) / 0.05), transparent 35%);
+  }
+  .cozy-paper {
+    opacity: 0.15;
+    background-image: repeating-linear-gradient(0deg, transparent 0 3px, hsl(var(--cozy-paper) / 0.06) 3px 4px),
+      repeating-linear-gradient(93deg, transparent 0 5px, hsl(var(--cozy-paper) / 0.04) 5px 6px);
+  }
+  .cozy-steam {
+    position: absolute;
+    bottom: -80px;
+    width: 24px;
+    height: 100px;
+    border-left: 1px solid hsl(var(--cozy-steam) / 0.16);
+    border-radius: 50%;
+    opacity: 0;
+  }
+  .cozy-steam-one { left: 4%; }
+  .cozy-steam-two { right: 6%; }
+  .cozy-steam-three { right: 14%; }
+  [data-theme="cozy"] .cozy-firelight { animation: cozy-flicker 9s ease-in-out infinite alternate; }
+  [data-theme="cozy"] .cozy-steam { animation: cozy-drift 24s ease-in-out infinite; }
+  [data-theme="cozy"] .cozy-steam-two { animation-delay: 7s; }
+  [data-theme="cozy"] .cozy-steam-three { animation-delay: 15s; }
+  @keyframes cozy-flicker {
+    0%, 100% { opacity: 0.6; }
+    35% { opacity: 0.85; }
+    65% { opacity: 0.7; }
+    85% { opacity: 1; }
+  }
+  @keyframes cozy-drift {
+    0% { transform: translate(0, 0) rotate(-8deg); opacity: 0; }
+    20%, 60% { opacity: 0.55; }
+    100% { transform: translate(25px, -65vh) rotate(15deg); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cozy-atmosphere, [data-theme="cozy"] .cozy-firelight, [data-theme="cozy"] .cozy-steam,
+    .theme-transition body, .theme-transition :is(nav, main, section, footer, input, textarea, .book-card, .genre-tag),
+    [data-theme="cozy"] .cozy-lift {
+      animation: none;
+      transition: none;
+    }
+    .cozy-steam { display: none; }
+    [data-theme="cozy"] :is(.cozy-lift, .book-card):hover { transform: none; }
+  }
+}

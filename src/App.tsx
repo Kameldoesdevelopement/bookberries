@@ -8,6 +8,8 @@ import { Suspense, lazy } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
+import { ThemeProvider } from "@/context/ThemeContext";
+import CozyAtmosphere from "@/components/CozyAtmosphere";
 
 const Shop = lazy(() => import("./pages/Shop"));
 const Promotions = lazy(() => import("./pages/Promotions"));
@@ -39,6 +41,7 @@ const PageFallback = () => (
 );
 
 const App = () => (
+  <ThemeProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <CartProvider>
@@ -66,11 +69,13 @@ const App = () => (
               </Suspense>
             </div>
             <Footer />
+            <CozyAtmosphere />
           </div>
         </BrowserRouter>
       </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;

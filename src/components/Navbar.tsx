@@ -5,6 +5,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBooks } from "@/hooks/useBooks";
 import logo from "@/assets/bookberries-logo.png";
+import ThemeToggle from "@/components/ThemeToggle";
+import { useTheme } from "@/context/ThemeContext";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -15,6 +17,7 @@ const navLinks = [
 ];
 
 const Navbar = () => {
+  const { theme } = useTheme();
   const { totalItems } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,10 +65,13 @@ const Navbar = () => {
       <div className="hidden md:flex container mx-auto h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
           <img src={logo} alt="Bookberries logo" className="h-10 w-auto" />
-          <span className="font-display text-xl font-bold text-foreground">Bookberries</span>
+          <span>
+            <span className="font-display text-xl font-bold text-foreground">Bookberries</span>
+            {theme === "cozy" && <span className="block font-body text-[11px] leading-tight text-muted-foreground">Make yourself at home.</span>}
+          </span>
         </Link>
 
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-2 lg:gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.to}
@@ -81,6 +87,7 @@ const Navbar = () => {
           ))}
         </div>
 
+        <ThemeToggle />
         <Link
           to="/cart"
           className="relative flex items-center text-muted-foreground transition-colors hover:text-foreground"
@@ -155,6 +162,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          <ThemeToggle />
           <Link
             to="/cart"
             className="relative flex items-center text-muted-foreground transition-colors hover:text-foreground"
@@ -185,6 +193,7 @@ const Navbar = () => {
             className="overflow-hidden border-t border-border md:hidden"
           >
             <div className="container mx-auto flex flex-col gap-2 px-4 py-4">
+              {theme === "cozy" && <p className="px-3 text-sm text-muted-foreground">Make yourself at home, book lover.</p>}
               {navLinks.map((link) => (
                 <Link
                   key={link.to}

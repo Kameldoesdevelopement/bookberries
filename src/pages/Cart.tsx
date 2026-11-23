@@ -4,8 +4,10 @@ import { Link } from "react-router-dom";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 import { getEffectivePrice, isOnPromotion } from "@/data/books";
+import { useTheme } from "@/context/ThemeContext";
 
 const Cart = () => {
+  const { theme } = useTheme();
   const { items, removeFromCart, updateQuantity, totalPrice } = useCart();
 
   if (items.length === 0) {
@@ -17,8 +19,8 @@ const Cart = () => {
           className="text-center"
         >
           <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">Your cart is empty</h1>
-          <p className="text-muted-foreground mb-6">Browse our collection and find your next read.</p>
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">{theme === "cozy" ? "A little room for a good story" : "Your cart is empty"}</h1>
+          <p className="text-muted-foreground mb-6">{theme === "cozy" ? "Your next reading companion is waiting on the shelves." : "Browse our collection and find your next read."}</p>
           <Button variant="warm" asChild>
             <Link to="/shop">Browse Shop</Link>
           </Button>
