@@ -113,19 +113,33 @@ const Admin = () => {
     name: "", description: "", price: "", category: "", imageUrl: "",
   });
 
+  // Runs a request and retries it a couple of times if the auth lock cancelled it
+  const retryOnAbort = async <T,>(
+    run: () => PromiseLike<{ data: T | null; error: { message: string } | null }>
+  ) => {
+    let result = await run();
+    for (let attempt = 1; attempt <= 3 && result.error && /abort|lock/i.test(result.error.message); attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+      result = await run();
+    }
+    return result;
+  };
+
   const fetchOrders = async () => {
     setLoadingOrders(true);
-
-    // Load all orders, 1000 at a time (the database returns at most 1000 rows per request)
-    const orderData: Tables<"orders">[] = [];
     const PAGE_SIZE = 1000;
+
+    // Load all orders, one page of 1000 at a time (the database returns at most 1000 rows per request)
+    const orderData: Tables<"orders">[] = [];
     for (let from = 0; ; from += PAGE_SIZE) {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .order("id")
-        .range(from, from + PAGE_SIZE - 1);
+      const { data, error } = await retryOnAbort(() =>
+        supabase
+          .from("orders")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .order("id")
+          .range(from, from + PAGE_SIZE - 1)
+      );
       if (error) {
         console.error("fetchOrders orders error:", error);
         toast.error(`Failed to load orders: ${error.message}`);
@@ -133,31 +147,29 @@ const Admin = () => {
         setLoadingOrders(false);
         return;
       }
-      orderData.push(...(data || []));
+      orderData.push(...((data as Tables<"orders">[]) || []));
       if (!data || data.length < PAGE_SIZE) break;
     }
 
-    // Load order items in small batches so the request URL stays short
-    const orderIds = orderData.map((order) => order.id);
-    const BATCH_SIZE = 50;
-    const batches: string[][] = [];
-    for (let i = 0; i < orderIds.length; i += BATCH_SIZE) {
-      batches.push(orderIds.slice(i, i + BATCH_SIZE));
-    }
-
-    const results = await Promise.all(
-      batches.map((ids) => supabase.from("order_items").select("*").in("order_id", ids))
-    );
-
+    // Load all order items the same way, one request at a time, so there are no huge URLs
+    // and no parallel requests fighting over the login session
     const itemData: Tables<"order_items">[] = [];
     let itemsFailed = false;
-    for (const { data, error } of results) {
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data, error } = await retryOnAbort(() =>
+        supabase
+          .from("order_items")
+          .select("*")
+          .order("id")
+          .range(from, from + PAGE_SIZE - 1)
+      );
       if (error) {
         console.error("fetchOrders items error:", error);
         itemsFailed = true;
-        continue;
+        break;
       }
       itemData.push(...((data as Tables<"order_items">[]) || []));
+      if (!data || data.length < PAGE_SIZE) break;
     }
     if (itemsFailed) {
       toast.error("Failed to load some order items");
@@ -600,6 +612,7 @@ const Admin = () => {
                 <ShoppingBag className="h-4 w-4" />Add Accessory
               </Button>
             </form>
+          
           </div>
         )}
 
