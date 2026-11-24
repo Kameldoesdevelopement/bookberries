@@ -1,3 +1,3 @@
-- [ ] Add persistent Default/Cozy themes with pre-paint initialization.
-- [ ] Add Cozy atmosphere, typography, interactions, and friendly empty states.
-- [ ] Verify theme switching, persistence, reduced motion, and phone/desktop layouts.
+- [x] Add persistent Default/Cozy themes with pre-paint initialization.
+- [x] Add Cozy atmosphere, typography, interactions, and friendly empty states.
+- [x] Verify theme switching, persistence, reduced motion, and phone/desktop layouts.

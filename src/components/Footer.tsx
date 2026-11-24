@@ -5,7 +5,7 @@ import logo from "@/assets/bookberries-logo.png";
 const Footer = () => (
   <footer className="border-t border-border bg-secondary/50">
     <div className="container mx-auto px-4 py-12">
-      <div className="grid gap-8 md:grid-cols-4">
+      <div className="grid gap-8 md:grid-cols-4 [&>*]:min-w-0 break-words [overflow-wrap:anywhere]">
         <div>
           <Link to="/" className="flex items-center gap-2 mb-3">
             <img src={logo} alt="Bookberries" className="h-8 w-auto" />
