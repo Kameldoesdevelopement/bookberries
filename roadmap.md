@@ -1,3 +1,3 @@
 - [x] Add persistent Default/Cozy themes with pre-paint initialization.
 - [x] Add Cozy atmosphere, typography, interactions, and friendly empty states.
-- [x] Verify theme switching, persistence, reduced motion, and phone/desktop layouts.
+- [x] Verify theme switching, persistence, reduced motion, and phone/desktop layouts.- [x] Cozy drink offer and Shop scroll (shelf) mode

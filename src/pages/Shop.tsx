@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { GENRES } from "@/data/books";
 import { useBooks } from "@/hooks/useBooks";
 import { useAccessories } from "@/hooks/useAccessories";
 import BookCard from "@/components/BookCard";
 import AccessoryCard from "@/components/AccessoryCard";
-import { Search } from "lucide-react";
+import { Search, LayoutGrid, GalleryHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -15,6 +15,9 @@ const Shop = () => {
   const [search, setSearch] = useState("");
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [shopTab, setShopTab] = useState<ShopTab>("books");
+  const [view, setView] = useState<"grid" | "shelf">("grid");
+  const shelfRef = useRef<HTMLDivElement>(null);
+  const scrollShelf = (dir: number) => shelfRef.current?.scrollBy({ left: dir * shelfRef.current.clientWidth * 0.8, behavior: "smooth" });
   const { data: books = [], isLoading: booksLoading } = useBooks();
   const { data: accessories = [], isLoading: accessoriesLoading } = useAccessories();
 
@@ -80,6 +83,11 @@ const Shop = () => {
               ))}
             </div>
 
+            <div className="mb-6 flex justify-center gap-2">
+              <button onClick={() => setView("grid")} aria-pressed={view === "grid"} className={`genre-tag gap-1.5 ${view === "grid" ? "active" : ""}`}><LayoutGrid className="h-3.5 w-3.5" />Grid</button>
+              <button onClick={() => setView("shelf")} aria-pressed={view === "shelf"} className={`genre-tag gap-1.5 ${view === "shelf" ? "active" : ""}`}><GalleryHorizontal className="h-3.5 w-3.5" />{theme === "cozy" ? "Browse the shelf" : "Scroll mode"}</button>
+            </div>
+
             {booksLoading ? (
               <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -88,7 +96,18 @@ const Shop = () => {
               </div>
             ) : (
               <AnimatePresence mode="wait">
-                {filtered.length > 0 ? (
+                {filtered.length > 0 && view === "shelf" ? (
+                  <motion.div key={"shelf" + (activeGenre || "all")} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative">
+                    <p className="mb-3 text-center font-sans text-xs text-muted-foreground">{filtered.length} books, swipe or use the arrows</p>
+                    <div ref={shelfRef} className="shelf-scroll flex gap-4 overflow-x-auto pb-6 sm:gap-6">
+                      {filtered.map((book) => (
+                        <div key={book.id} className="w-[46%] shrink-0 sm:w-[30%] lg:w-[22%]"><BookCard book={book} /></div>
+                      ))}
+                    </div>
+                    <button onClick={() => scrollShelf(-1)} aria-label="Previous books" className="absolute left-1 top-1/2 hidden -translate-y-1/2 rounded-full border border-border bg-card p-2 shadow-md md:block"><ChevronLeft className="h-5 w-5" /></button>
+                    <button onClick={() => scrollShelf(1)} aria-label="Next books" className="absolute right-1 top-1/2 hidden -translate-y-1/2 rounded-full border border-border bg-card p-2 shadow-md md:block"><ChevronRight className="h-5 w-5" /></button>
+                  </motion.div>
+                ) : filtered.length > 0 ? (
                   <motion.div key={activeGenre || "all"} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
                     className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
                     {filtered.map((book) => (<BookCard key={book.id} book={book} />))}
