@@ -12,6 +12,7 @@ const navLinks = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Shop" },
   { to: "/promotions", label: "Promotions" },
+  { to: "/recommend", label: "Ask AI" },
   { to: "/request", label: "Request a Book" },
   { to: "/contact", label: "Contact" },
 ];

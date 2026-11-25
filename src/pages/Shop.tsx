@@ -7,6 +7,7 @@ import AccessoryCard from "@/components/AccessoryCard";
 import { Search, LayoutGrid, GalleryHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
+import { useSearchParams } from "react-router-dom";
 
 type ShopTab = "books" | "accessories";
 
@@ -15,7 +16,8 @@ const Shop = () => {
   const [search, setSearch] = useState("");
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [shopTab, setShopTab] = useState<ShopTab>("books");
-  const [view, setView] = useState<"grid" | "shelf">("grid");
+  const [params] = useSearchParams();
+  const [view, setView] = useState<"grid" | "shelf">(params.get("view") === "shelf" ? "shelf" : "grid");
   const shelfRef = useRef<HTMLDivElement>(null);
   const scrollShelf = (dir: number) => shelfRef.current?.scrollBy({ left: dir * shelfRef.current.clientWidth * 0.8, behavior: "smooth" });
   const { data: books = [], isLoading: booksLoading } = useBooks();
