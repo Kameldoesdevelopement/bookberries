@@ -16,7 +16,6 @@ const Shop = lazy(() => import("./pages/Shop"));
 const Promotions = lazy(() => import("./pages/Promotions"));
 const BookDetails = lazy(() => import("./pages/BookDetails"));
 const AccessoryDetails = lazy(() => import("./pages/AccessoryDetails"));
-const Recommend = lazy(() => import("./pages/Recommend"));
 const RequestBook = lazy(() => import("./pages/RequestBook"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Checkout = lazy(() => import("./pages/Checkout"));
@@ -60,7 +59,6 @@ const App = () => (
                   <Route path="/promotions" element={<Promotions />} />
                   <Route path="/book/:id" element={<BookDetails />} />
                   <Route path="/accessory/:id" element={<AccessoryDetails />} />
-                  <Route path="/recommend" element={<Recommend />} />
                   <Route path="/request" element={<RequestBook />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />

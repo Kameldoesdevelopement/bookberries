@@ -2,4 +2,3 @@
 - [x] Add Cozy atmosphere, typography, interactions, and friendly empty states.
 - [x] Verify theme switching, persistence, reduced motion, and phone/desktop layouts.- [x] Cozy drink offer and Shop scroll (shelf) mode
 - [x] Drink offer leads to shelf mode
-- [x] AI mood-based book recommendations

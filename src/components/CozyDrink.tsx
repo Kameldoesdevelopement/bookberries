@@ -58,7 +58,6 @@ export default function CozyDrink() {
                     </button>
                   ))}
                 </div>
-                <a href="/recommend" className="mt-3 block text-xs text-primary underline">Not sure what to read? Ask our bookseller</a>
               </>
             )}
           </motion.div>

@@ -1,3 +1,1 @@
 project_id = "johehdicnzpinmssmoim"
-[functions.recommend-books]
-verify_jwt = false
