@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import { ThemeProvider } from "@/context/ThemeContext";
 import CozyAtmosphere from "@/components/CozyAtmosphere";
 import CozyDrink from "@/components/CozyDrink";
+import { Analytics } from "@vercel/analytics/react";
 
 const Shop = lazy(() => import("./pages/Shop"));
 const Promotions = lazy(() => import("./pages/Promotions"));
@@ -74,6 +75,7 @@ const App = () => (
             <CozyDrink />
           </div>
         </BrowserRouter>
+        <Analytics />
       </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>
